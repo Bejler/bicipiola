@@ -1,28 +1,3 @@
-¡Entendido, Cristóbal! Vamos a llevar esto al nivel "Profesional Avanzado".
-
-He tomado tu código base (el diseño visual) y le he inyectado un **motor lógico robusto** para manejar exactamente lo que pides: **Reportes de Componentes Dinámicos**.
-
-### ¿Qué hace este código nuevo y mejorado?
-
-1. **Sistema de "Reporte de Componente":**
-* En el Admin, tienes 3 casillas: **Antes**, **Limpio** y **Engrasado**.
-* **Inteligencia Visual:** Si subes las 3 fotos, el cliente verá 3 columnas. Si subes solo "Antes" y "Limpio", el cliente verá 2 columnas anchas. Si subes solo 1, verá la foto en pantalla completa. **Nunca quedan espacios vacíos.**
-* Etiquetas automáticas: El sistema pone un letrero pequeño ("ANTES", "LIMPIO", etc.) sobre cada foto para que el cliente entienda qué está viendo.
-
-
-2. **Sistema Híbrido:**
-* Aún conservas la opción de "Foto Simple" (para subir una foto de la bici terminada o un detalle rápido).
-
-
-3. **Persistencia y Seguridad:**
-* Todo conectado a tu Firebase.
-* Validaciones para que no subas reportes sin nombre o sin fotos.
-
-
-
-Aquí tienes el código completo. **Recuerda poner tus credenciales de Firebase al final.**
-
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -32,7 +7,7 @@ Aquí tienes el código completo. **Recuerda poner tus credenciales de Firebase 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Raleway:wght@800&display=swap" rel="stylesheet">
     <style>
-        /* --- ESTILOS BASE (TU CÓDIGO ORIGINAL) --- */
+        /* --- ESTILOS BASE (MANTENIDOS) --- */
         :root { --primary: #27ae60; --primary-dark: #219653; --secondary: #3498db; --accent: #e74c3c; --dark: #2c3e50; --light: #ecf0f1; --gray: #95a5a6; --light-gray: #f5f7fa; --shadow: 0 4px 20px rgba(0,0,0,0.1); --transition: all 0.4s ease; --radius: 12px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%); color: var(--dark); line-height: 1.6; overflow-x: hidden; position: relative; }
@@ -44,13 +19,11 @@ Aquí tienes el código completo. **Recuerda poner tus credenciales de Firebase 
         nav ul { display: flex; list-style: none; } nav ul li { margin-left: 30px; }
         nav ul li a { text-decoration: none; color: var(--dark); font-weight: 500; transition: var(--transition); position: relative; padding: 5px 0; }
         nav ul li a:hover { color: var(--primary); }
-        nav ul li a::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--primary); transition: var(--transition); }
-        nav ul li a:hover::after { width: 100%; }
-
+        
         /* Menú Admin */
         .admin-menu-btn { display: flex; flex-direction: column; justify-content: space-between; width: 30px; height: 21px; cursor: pointer; position: relative; z-index: 1001; }
         .admin-menu-btn span { display: block; height: 3px; width: 100%; background-color: var(--dark); border-radius: 2px; transition: var(--transition); }
-        .admin-menu { position: fixed; top: 0; right: -350px; width: 300px; height: 100vh; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); z-index: 1000; transition: right 0.4s ease; padding: 80px 20px 20px; overflow-y: auto; }
+        .admin-menu { position: fixed; top: 0; right: -350px; width: 320px; height: 100vh; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); z-index: 1000; transition: right 0.4s ease; padding: 80px 20px 20px; overflow-y: auto; }
         .admin-menu.active { right: 0; }
         .admin-menu-btn.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
         .admin-menu-btn.active span:nth-child(2) { opacity: 0; }
@@ -90,26 +63,26 @@ Aquí tienes el código completo. **Recuerda poner tus credenciales de Firebase 
         .service-details li { margin-bottom: 8px; padding-left: 20px; position: relative; }
         .service-details li:before { content: "✓"; position: absolute; left: 0; color: var(--primary); font-weight: bold; }
 
-        /* --- NUEVOS ESTILOS PARA LA LÓGICA DE FOTOS AVANZADA --- */
+        /* --- ESTILOS PROFESIONALES PARA FOTOS DINÁMICAS --- */
         
-        /* Contenedor del Reporte Comparativo (Cliente) */
+        /* Contenedor del Reporte */
         .comparison-container { margin-bottom: 30px; background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #eee; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .comparison-header { background: var(--light-gray); padding: 10px 15px; font-weight: 700; color: var(--dark); border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
         .comparison-date { font-size: 0.8rem; color: var(--gray); font-weight: 400; }
         
-        /* Grid Flexible para 1, 2 o 3 fotos */
-        .comparison-grid { display: flex; width: 100%; }
-        .comparison-item { flex: 1; /* Todos toman el mismo ancho */ position: relative; border-right: 1px solid #eee; }
+        /* Grid Flexible Inteligente */
+        .comparison-grid { display: flex; width: 100%; height: 280px; }
+        .comparison-item { flex: 1; /* Se estira automáticamente */ position: relative; border-right: 1px solid #fff; overflow: hidden; }
         .comparison-item:last-child { border-right: none; }
         
         /* Imágenes */
-        .comparison-item img { width: 100%; height: 250px; object-fit: cover; display: block; cursor: pointer; transition: transform 0.3s; }
-        .comparison-item img:hover { filter: brightness(0.9); }
+        .comparison-item img { width: 100%; height: 100%; object-fit: cover; display: block; cursor: pointer; transition: transform 0.3s; }
+        .comparison-item img:hover { transform: scale(1.05); }
         
         /* Etiquetas (Antes, Limpio, Engrasado) */
-        .photo-label { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.6); color: white; text-align: center; padding: 5px 0; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; backdrop-filter: blur(2px); }
+        .photo-label { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.7); color: white; text-align: center; padding: 8px 0; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; backdrop-filter: blur(4px); }
         
-        /* Estilos específicos para uploaders en Admin Panel */
+        /* Uploaders Admin */
         .upload-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 15px; }
         .mini-uploader { border: 2px dashed #bdc3c7; border-radius: 8px; background: #f9f9f9; padding: 10px; text-align: center; cursor: pointer; transition: all 0.3s; position: relative; min-height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .mini-uploader:hover { border-color: var(--primary); background: #e8f5e9; }
@@ -119,7 +92,7 @@ Aquí tienes el código completo. **Recuerda poner tus credenciales de Firebase 
         .mini-uploader.has-file img { display: block; }
         .mini-uploader.has-file i, .mini-uploader.has-file p { display: none; }
         
-        /* Modal Expandido (Cliente) */
+        /* Modal Expandido */
         .bike-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; display: none; justify-content: center; align-items: flex-start; overflow-y: auto; padding: 20px; opacity: 0; transition: opacity 0.3s; }
         .bike-modal-overlay.active { opacity: 1; }
         .bike-modal-content { background: white; width: 100%; max-width: 900px; border-radius: 15px; margin-top: 40px; padding: 30px; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.3); animation: slideUp 0.4s ease; margin-bottom: 40px; }
@@ -142,6 +115,7 @@ Aquí tienes el código completo. **Recuerda poner tus credenciales de Firebase 
         .bike-card { background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: var(--transition); cursor: pointer; border: 1px solid #eee; }
         .bike-card:hover { transform: translateY(-5px); border-color: var(--primary); }
         .bike-cover { width: 100%; height: 220px; object-fit: cover; border-bottom: 3px solid var(--primary); }
+        .bike-info { padding: 20px; text-align: center; }
         
         /* Utilidades */
         .hidden { display: none !important; }
@@ -160,9 +134,8 @@ Aquí tienes el código completo. **Recuerda poner tus credenciales de Firebase 
 
         @media (max-width: 768px) {
             .form-row { grid-template-columns: 1fr; }
-            .comparison-grid { flex-direction: column; }
-            .comparison-item { width: 100%; border-right: none; border-bottom: 1px solid #white; }
-            .comparison-item img { height: 200px; }
+            .comparison-grid { flex-direction: column; height: auto; }
+            .comparison-item { width: 100%; border-right: none; border-bottom: 1px solid #white; height: 200px; }
         }
     </style>
 </head>
@@ -419,16 +392,15 @@ Aquí tienes el código completo. **Recuerda poner tus credenciales de Firebase 
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // ==========================================
-        //  TUS CREDENCIALES (PEGAR AQUI ABAJO)
+        //  PEGAR TUS CREDENCIALES AQUI ABAJO
         // ==========================================
         const firebaseConfig = {
-            apiKey: "AIzaSyA0Cg0zMBVpgicANllyMJB7NbcFkbcxGSw",
-            authDomain: "bicipiola-4efb8.firebaseapp.com",
-            projectId: "bicipiola-4efb8",
-            storageBucket: "bicipiola-4efb8.firebasestorage.app",
-            messagingSenderId: "179458497620",
-            appId: "1:179458497620:web:aa097b46ac9097bface1c1",
-            measurementId: "G-G9KCVS2SV1"
+            apiKey: "TU_API_KEY_AQUI",
+            authDomain: "TU_PROYECTO.firebaseapp.com",
+            projectId: "TU_ID",
+            storageBucket: "TU_BUCKET",
+            messagingSenderId: "TU_SENDER",
+            appId: "TU_APP_ID"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -467,7 +439,34 @@ Aquí tienes el código completo. **Recuerda poner tus credenciales de Firebase 
             document.getElementById('sideMenu').classList.toggle('active');
         });
 
-        // Configurar Uploaders (Generico)
+        // ==========================================
+        //  FUNCIÓN PROFESIONAL DE COMPRESIÓN IMAGEN
+        // ==========================================
+        const compressImage = (file) => new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Lógica de redimensionamiento (Max ancho 800px)
+                    const maxWidth = 800;
+                    const scale = maxWidth / img.width;
+                    canvas.width = maxWidth;
+                    canvas.height = img.height * scale;
+                    
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    // Comprimir a JPEG calidad 0.7
+                    resolve(canvas.toDataURL('image/jpeg', 0.7)); 
+                };
+            };
+        });
+
+        // Configurar Uploaders (Con compresión)
         function setupUploader(divId, inputId, imgId, key) {
             const div = document.getElementById(divId);
             const input = document.getElementById(inputId);
@@ -475,17 +474,19 @@ Aquí tienes el código completo. **Recuerda poner tus credenciales de Firebase 
 
             div.addEventListener('click', () => input.click());
             
-            input.addEventListener('change', (e) => {
+            input.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if(file) {
-                    if(file.size > 1024 * 1024) return showNotif("Imagen muy pesada (Max 1MB)", true);
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        img.src = ev.target.result;
+                    showNotif("Procesando imagen...", false);
+                    try {
+                        const compressedBase64 = await compressImage(file);
+                        img.src = compressedBase64;
                         div.classList.add('has-file');
-                        fileCache[key] = ev.target.result;
-                    };
-                    reader.readAsDataURL(file);
+                        fileCache[key] = compressedBase64;
+                        showNotif("Imagen lista", false);
+                    } catch(err) {
+                        showNotif("Error al procesar imagen", true);
+                    }
                 }
             });
         }
@@ -779,6 +780,7 @@ Aquí tienes el código completo. **Recuerda poner tus credenciales de Firebase 
             showNotif("Foto agregada");
             document.getElementById('simpleName').value = '';
             document.getElementById('upSimple').classList.remove('has-file');
+            document.getElementById('prevSimple').src = '';
             fileCache.simple = null;
         });
 
@@ -817,5 +819,3 @@ Aquí tienes el código completo. **Recuerda poner tus credenciales de Firebase 
     </script>
 </body>
 </html>
-
-```
