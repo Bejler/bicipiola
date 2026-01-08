@@ -3,41 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BICIPIOLA - Taller Profesional de Bicicletas</title>
+    <title>BICIPIOLA - Taller Profesional</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Raleway:wght@800&display=swap" rel="stylesheet">
     <style>
-        /* ESTILOS ORIGINALES (MANTENIDOS EXACTAMENTE IGUAL) */
+        /* ESTILOS GENERALES (Mantenidos) */
         :root { --primary: #27ae60; --primary-dark: #219653; --secondary: #3498db; --accent: #e74c3c; --dark: #2c3e50; --light: #ecf0f1; --gray: #95a5a6; --light-gray: #f5f7fa; --shadow: 0 4px 20px rgba(0,0,0,0.1); --transition: all 0.4s ease; --radius: 12px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%); color: var(--dark); line-height: 1.6; overflow-x: hidden; position: relative; }
         
-        /* Header y navegación */
+        /* Header */
         header { background-color: rgba(255, 255, 255, 0.95); box-shadow: var(--shadow); position: fixed; width: 100%; top: 0; z-index: 1000; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; transition: var(--transition); }
         .logo { font-family: 'Raleway', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--primary); text-decoration: none; display: flex; align-items: center; }
         nav ul { display: flex; list-style: none; } nav ul li { margin-left: 30px; }
         nav ul li a { text-decoration: none; color: var(--dark); font-weight: 500; transition: var(--transition); position: relative; padding: 5px 0; }
         nav ul li a:hover { color: var(--primary); }
         
-        /* Menú Admin */
+        /* Menu Admin */
         .admin-menu-btn { display: flex; flex-direction: column; justify-content: space-between; width: 30px; height: 21px; cursor: pointer; position: relative; z-index: 1001; }
         .admin-menu-btn span { display: block; height: 3px; width: 100%; background-color: var(--dark); border-radius: 2px; transition: var(--transition); }
         .admin-menu { position: fixed; top: 0; right: -320px; width: 300px; height: 100vh; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); z-index: 1000; transition: right 0.4s ease; padding: 80px 20px 20px; overflow-y: auto; }
         .admin-menu.active { right: 0; }
-        .admin-menu-btn.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
-        .admin-menu-btn.active span:nth-child(2) { opacity: 0; }
-        .admin-menu-btn.active span:nth-child(3) { transform: rotate(-45deg) translate(7px, -6px); }
         .admin-menu-item { padding: 12px 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: var(--transition); background: rgba(39, 174, 96, 0.05); border-left: 3px solid var(--primary); }
-        .admin-menu-item:hover { background: rgba(39, 174, 96, 0.15); }
-
+        
         /* Hero */
         .hero { height: 100vh; display: flex; align-items: center; position: relative; overflow: hidden; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); background-size: cover; background-position: center; color: white; padding: 0 10%; text-align: center; }
-        .hero-content { max-width: 900px; margin: 0 auto; z-index: 2; transform: translateY(50px); opacity: 0; animation: fadeUp 1s forwards 0.5s; }
+        .hero-content { max-width: 900px; margin: 0 auto; z-index: 2; animation: fadeUp 1s forwards 0.5s; opacity: 0; }
         @keyframes fadeUp { to { transform: translateY(0); opacity: 1; } }
         .brand-title { font-family: 'Raleway', sans-serif; font-size: 4.5rem; font-weight: 800; margin-bottom: 20px; color: #fff; text-transform: uppercase; letter-spacing: 3px; }
         .btn { display: inline-block; padding: 15px 35px; background: var(--primary); color: white; border-radius: 50px; text-decoration: none; font-weight: 600; transition: var(--transition); border: none; cursor: pointer; font-size: 1.1rem; margin: 10px 5px; }
-        
-        /* Cards & Grid */
+
+        /* Estructura */
         .services, .bikes-section, .tracking { padding: 100px 5%; }
         .section-title { text-align: center; margin-bottom: 60px; }
         .services-grid, .bikes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 50px; }
@@ -45,29 +41,27 @@
         .bike-card { cursor: pointer; transform: scale(0.95); opacity: 0; }
         .bike-card.visible { transform: scale(1); opacity: 1; }
         
-        /* Bike Expanded */
-        .bike-card.expanded { position: fixed; top: 80px; left: 5%; width: 90%; height: calc(100vh - 100px); z-index: 2000; overflow-y: auto; transform: scale(1); box-shadow: 0 10px 50px rgba(0,0,0,0.3); padding-bottom: 50px; }
-        .bike-image { width: 100%; height: 220px; object-fit: cover; border-bottom: 3px solid var(--primary); }
-        .bike-info { padding: 20px; }
+        /* MODAL EXPANDIDO (ESTILOS NUEVOS PARA FOTOS) */
+        .bike-card.expanded { position: fixed; top: 80px; left: 5%; width: 90%; height: calc(100vh - 100px); z-index: 2000; overflow-y: auto; transform: scale(1); box-shadow: 0 10px 50px rgba(0,0,0,0.3); padding-bottom: 50px; background: #fff; }
+        .expanded-content { padding: 0 20px 40px; max-width: 900px; margin: 0 auto; text-align: left; }
         
-        /* Estados */
-        .bike-status { display: inline-block; padding: 6px 15px; border-radius: 20px; font-weight: 500; margin-top: 10px; font-size: 0.9rem; }
-        .status-diagnostico { background: #f39c12; color: white; }
-        .status-reparacion { background: #3498db; color: white; }
-        .status-listo { background: #2ecc71; color: white; }
-        .status-entregado { background: #7f8c8d; color: white; }
+        /* Contenedor de Comparación de Componentes */
+        .component-group { margin-bottom: 30px; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #eee; }
+        .component-title { font-size: 1.2rem; font-weight: bold; color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; }
+        .component-title i { margin-right: 10px; }
+        
+        .photos-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .photo-item { flex: 1; min-width: 150px; position: relative; }
+        .photo-item img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        /* Etiquetas de estado */
+        .photo-badge { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        .badge-antes { background: #e74c3c; } /* Rojo */
+        .badge-limpio { background: #3498db; } /* Azul */
+        .badge-engrasado { background: #27ae60; } /* Verde */
 
-        /* Timeline & Stages */
-        .timeline { margin-top: 20px; padding-left: 30px; border-left: 2px solid var(--primary); text-align: left; }
-        .timeline-item { margin-bottom: 25px; position: relative; }
-        .timeline-item:before { content: ''; position: absolute; left: -36px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--primary); border: 3px solid white; }
-        .stages-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 10px; }
-        .stage-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
-        .stage-image { width: 100%; height: 140px; object-fit: cover; }
-
-        /* Admin Panel Styles */
-        .admin-section { display: none; margin-bottom: 50px; } /* Oculto por defecto */
-        .admin-section.active { display: block; }
+        /* Admin Styles */
+        .admin-section { display: none; margin-bottom: 50px; } .admin-section.active { display: block; }
         .admin-panel { background: #f8f9fa; padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow); border: 2px dashed var(--primary); }
         .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #eee; flex-wrap: wrap; }
         .tab-btn { padding: 10px 20px; background: none; border: none; cursor: pointer; font-size: 1rem; font-weight: 500; color: var(--gray); position: relative; }
@@ -75,25 +69,37 @@
         .tab-btn.active:after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 3px; background: var(--primary); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .form-group { margin-bottom: 20px; text-align: left; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
         
-        /* Drag & Drop */
-        .photo-upload-area { border: 2px dashed #ddd; border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; background: var(--light-gray); min-height: 150px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .photo-upload-area.drag-over { border-color: var(--primary); background: rgba(39, 174, 96, 0.1); }
-        .photo-preview img { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-top: 10px; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
 
+        /* Áreas de carga de fotos pequeñas */
+        .mini-upload-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+        .mini-upload-box { border: 2px dashed #ccc; border-radius: 8px; padding: 10px; text-align: center; cursor: pointer; background: white; min-height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s; }
+        .mini-upload-box:hover { border-color: var(--primary); background: #ebf5ee; }
+        .mini-upload-box i { font-size: 1.5rem; color: var(--gray); margin-bottom: 5px; }
+        .mini-upload-box span { font-size: 0.8rem; font-weight: bold; color: var(--dark); }
+        .mini-upload-box img { width: 100%; height: 80px; object-fit: cover; border-radius: 4px; margin-top: 5px; }
+        
         /* Utils */
         .notification { position: fixed; top: 20px; right: 20px; padding: 15px 25px; border-radius: 8px; background: var(--primary); color: white; box-shadow: var(--shadow); z-index: 3000; transform: translateX(120%); transition: transform 0.4s ease; }
         .notification.show { transform: translateX(0); }
         .notification.error { background: var(--accent); }
         .close-btn { position: absolute; top: 15px; right: 15px; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2001; }
-        
-        /* Mobile */
+
+        /* Estados Bici */
+        .status-diagnostico { color: #f39c12; font-weight: bold; } 
+        .status-reparacion { color: #3498db; font-weight: bold; } 
+        .status-listo { color: #2ecc71; font-weight: bold; }
+        .status-entregado { color: #95a5a6; font-weight: bold; }
+
         @media (max-width: 768px) {
             header { padding: 15px; } nav ul { display: none; }
             .brand-title { font-size: 2.8rem; }
             .bike-card.expanded { top: 0; left: 0; width: 100%; height: 100vh; border-radius: 0; }
+            .mini-upload-grid { grid-template-columns: 1fr; }
+            .photos-row { flex-direction: column; }
+            .photo-item img { height: 250px; }
         }
         .animate-on-scroll { opacity: 0; transform: translateY(20px); transition: all 0.6s ease; }
         .animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
@@ -112,9 +118,7 @@
                 <li><a href="#seguimiento">Seguimiento</a></li>
             </ul>
         </nav>
-        <div class="admin-menu-btn" id="adminMenuBtn">
-            <span></span><span></span><span></span>
-        </div>
+        <div class="admin-menu-btn" id="adminMenuBtn"><span></span><span></span><span></span></div>
     </header>
 
     <div class="admin-menu" id="adminMenu">
@@ -122,18 +126,11 @@
         <div id="loginFormContainer">
             <input type="email" id="menuEmail" placeholder="Email" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px;">
             <input type="password" id="menuPass" placeholder="Contraseña" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px;">
-            <div class="admin-menu-item" id="loginBtnAction">
-                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
-            </div>
+            <div class="admin-menu-item" id="loginBtnAction"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</div>
         </div>
-
         <div id="adminActionsContainer" style="display:none;">
-            <div class="admin-menu-item" id="btnShowPanel">
-                <i class="fas fa-tools"></i> Ver Panel de Gestión
-            </div>
-            <div class="admin-menu-item" id="btnLogoutAction" style="background: rgba(231, 76, 60, 0.1); border-left-color: var(--accent);">
-                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-            </div>
+            <div class="admin-menu-item" id="btnShowPanel"><i class="fas fa-tools"></i> Ver Panel de Gestión</div>
+            <div class="admin-menu-item" id="btnLogoutAction" style="background: rgba(231, 76, 60, 0.1); border-left-color: var(--accent);"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</div>
             <p style="text-align:center; font-size:0.8rem; color:#95a5a6; margin-top:20px;">Sesión Activa</p>
         </div>
     </div>
@@ -144,7 +141,7 @@
             <h2>Arreglo y Mantención de Bicicletas</h2>
             <div class="hero-btns">
                 <a href="#seguimiento" class="btn">Ver estado de mi bici</a>
-                <a href="https://wa.me/56933755577" class="btn whatsapp-btn"><i class="fab fa-whatsapp"></i> Contactar</a>
+                <a href="https://wa.me/56933755577" class="btn" style="background: #25D366;"><i class="fab fa-whatsapp"></i> Contactar</a>
             </div>
         </div>
     </section>
@@ -181,13 +178,10 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Foto Portada</label>
-                        <div class="photo-upload-container">
-                            <div class="photo-upload-area" id="newBikeUploadArea">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                                <p>Toca para subir foto</p>
-                                <input type="file" id="newBikeFile" accept="image/*" style="display:none;">
-                            </div>
+                        <label>Foto Portada (Click para subir)</label>
+                        <div class="photo-upload-area" id="newBikeUploadArea" style="background:white;">
+                            <i class="fas fa-camera fa-2x"></i>
+                            <input type="file" id="newBikeFile" accept="image/*" style="display:none;">
                             <div class="photo-preview" id="newBikePreview"></div>
                         </div>
                     </div>
@@ -196,7 +190,7 @@
 
                 <div class="tab-content" id="edit-bike">
                     <div class="form-group">
-                        <label>Selecciona Bicicleta para editar:</label>
+                        <label>Selecciona Bicicleta:</label>
                         <select id="bikeSelector">
                             <option value="">Cargando bicicletas...</option>
                         </select>
@@ -216,19 +210,38 @@
                             <button class="btn" id="btnUpdateStatus" style="margin-top:10px; padding: 8px 15px; font-size:0.9rem;">Actualizar Estado</button>
                         </div>
 
-                        <div class="form-group" style="background: #fff; padding:15px; border-radius:8px;">
-                            <label>Agregar Nueva Etapa (Avance con Foto)</label>
-                            <input type="text" id="stageTitle" placeholder="Nombre etapa (Ej: Desarme, Pintura...)">
-                            <div class="photo-upload-area" id="stageUploadArea" style="margin-top:10px; min-height:100px; padding:15px;">
-                                <i class="fas fa-camera"></i>
-                                <p style="font-size:0.8rem;">Foto del avance</p>
-                                <input type="file" id="stageFile" accept="image/*" style="display:none;">
+                        <div class="form-group" style="background: #e8f6f3; padding:20px; border-radius:8px; border: 1px solid var(--primary);">
+                            <h4 style="color:var(--primary); margin-bottom:15px;"><i class="fas fa-camera"></i> Agregar Componente / Avance</h4>
+                            
+                            <label>Nombre del Componente:</label>
+                            <input type="text" id="compName" placeholder="Ej: Motor, Transmisión, Bici Completa..." style="margin-bottom:15px;">
+                            
+                            <label>Sube las fotos correspondientes (No es obligatorio subir todas):</label>
+                            <div class="mini-upload-grid">
+                                <div class="mini-upload-box" id="uploadAntes">
+                                    <i class="fas fa-history"></i>
+                                    <span>ANTES</span>
+                                    <input type="file" id="fileAntes" accept="image/*" style="display:none;">
+                                    <div id="previewAntes"></div>
+                                </div>
+                                <div class="mini-upload-box" id="uploadLimpio">
+                                    <i class="fas fa-soap"></i>
+                                    <span>LIMPIO</span>
+                                    <input type="file" id="fileLimpio" accept="image/*" style="display:none;">
+                                    <div id="previewLimpio"></div>
+                                </div>
+                                <div class="mini-upload-box" id="uploadEngrasado">
+                                    <i class="fas fa-oil-can"></i>
+                                    <span>ENGRASADO</span>
+                                    <input type="file" id="fileEngrasado" accept="image/*" style="display:none;">
+                                    <div id="previewEngrasado"></div>
+                                </div>
                             </div>
-                            <div class="photo-preview" id="stagePreview"></div>
-                            <button class="btn" id="btnAddStage" style="margin-top:10px; width:100%;">Guardar Avance</button>
+
+                            <button class="btn" id="btnAddComponent" style="margin-top:15px; width:100%;">Guardar Componente</button>
                         </div>
 
-                        <button class="btn" id="btnDeleteBike" style="background:var(--accent); width:100%;">Eliminar Bicicleta</button>
+                        <button class="btn" id="btnDeleteBike" style="background:var(--accent); width:100%; margin-top:20px;">Eliminar Bicicleta</button>
                     </div>
                 </div>
             </div>
@@ -236,38 +249,26 @@
     </section>
 
     <section id="servicios" class="services">
-        <div class="section-title">
-            <h2>Servicios</h2>
-            <p>Mantención profesional para tu compañera</p>
-        </div>
+        <div class="section-title"><h2>Servicios</h2><p>Mantención profesional</p></div>
         <div class="services-grid">
             <div class="service-card animate-on-scroll">
                 <div class="service-icon"><i class="fas fa-tools"></i></div>
                 <h3>Mantención Básica</h3>
                 <div class="service-price">$25.000</div>
-                <div class="service-details"><ul><li>Ajuste cambios y frenos</li><li>Lubricación</li><li>Lavado simple</li></ul></div>
+                <div class="service-details"><ul><li>Ajuste cambios</li><li>Frenos</li><li>Lubricación</li></ul></div>
             </div>
             <div class="service-card animate-on-scroll">
                 <div class="service-icon"><i class="fas fa-cogs"></i></div>
                 <h3>Mantención Full</h3>
                 <div class="service-price">$45.000</div>
-                <div class="service-details"><ul><li>Todo lo básico</li><li>Engrase de mazas</li><li>Centrado de ruedas</li></ul></div>
-            </div>
-            <div class="service-card animate-on-scroll">
-                <div class="service-icon"><i class="fas fa-bicycle"></i></div>
-                <h3>Armado / Reparación</h3>
-                <div class="service-price">Cotizar</div>
-                <div class="service-details"><ul><li>Sangrado de frenos</li><li>Instalación componentes</li><li>Tubeless</li></ul></div>
+                <div class="service-details"><ul><li>Básica + Mazas</li><li>Centrado</li><li>Limpieza profunda</li></ul></div>
             </div>
         </div>
     </section>
 
     <section id="bicicletas" class="bikes-section">
         <div class="bikes-container">
-            <div class="section-title">
-                <h2>Taller en Vivo</h2>
-                <p>Estado actual de las bicicletas en el taller</p>
-            </div>
+            <div class="section-title"><h2>Taller en Vivo</h2><p>Estado actual</p></div>
             <div class="bikes-grid" id="bikesGrid">
                 <p style="text-align:center; width:100%;">Cargando datos...</p>
             </div>
@@ -288,17 +289,7 @@
         </div>
     </section>
 
-    <footer id="contacto">
-        <div class="footer-grid">
-            <div class="footer-col">
-                <h4>BICIPIOLA</h4>
-                <p>Concón, Valparaíso</p>
-                <div class="social-links">
-                    <a href="https://instagram.com/bicipiola"><i class="fab fa-instagram"></i></a>
-                    <a href="https://wa.me/56933755577"><i class="fab fa-whatsapp"></i></a>
-                </div>
-            </div>
-        </div>
+    <footer>
         <div class="copyright"><p>&copy; 2026 BICIPIOLA.</p></div>
     </footer>
 
@@ -307,7 +298,6 @@
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // TUS CREDENCIALES
         const firebaseConfig = {
             apiKey: "AIzaSyA0Cg0zMBVpgicANllyMJB7NbcFkbcxGSw",
             authDomain: "bicipiola-4efb8.firebaseapp.com",
@@ -323,29 +313,24 @@
         const auth = getAuth(app);
         const bikesCol = collection(db, "bicicletas");
 
-        // Variables Globales de UI
-        let localBikes = []; // Copia local para búsqueda y render
+        let localBikes = [];
         let currentEditingId = null;
-        let newBikePhotoBase64 = null;
-        let newStagePhotoBase64 = null;
-
-        // --- 1. INTERFAZ UI (Eventos visuales) ---
+        let newBikePhoto = null;
         
-        // Animaciones Scroll
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('visible'); });
-        });
+        // Variables para las 3 fotos del componente
+        let compPhotos = { antes: null, limpio: null, engrasado: null };
+
+        // Scroll Anim
+        const observer = new IntersectionObserver((entries) => { entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }); });
         document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
 
-        // Menú Admin Deslizante
-        const adminMenuBtn = document.getElementById('adminMenuBtn');
-        const adminMenu = document.getElementById('adminMenu');
-        adminMenuBtn.addEventListener('click', () => {
-            adminMenuBtn.classList.toggle('active');
-            adminMenu.classList.toggle('active');
+        // Menu Logic
+        document.getElementById('adminMenuBtn').addEventListener('click', () => {
+            document.getElementById('adminMenuBtn').classList.toggle('active');
+            document.getElementById('adminMenu').classList.toggle('active');
         });
 
-        // Tabs
+        // Tabs Logic
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -355,195 +340,154 @@
             });
         });
 
-        // Drag & Drop Helpers
-        function setupUpload(areaId, fileId, previewId, callback) {
-            const area = document.getElementById(areaId);
-            const input = document.getElementById(fileId);
-            const preview = document.getElementById(previewId);
-            
-            area.addEventListener('click', () => input.click());
-            input.addEventListener('change', (e) => processFile(e.target.files[0]));
-            
-            // Drag events
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                area.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); });
-            });
-            area.addEventListener('dragover', () => area.classList.add('drag-over'));
-            area.addEventListener('dragleave', () => area.classList.remove('drag-over'));
-            area.addEventListener('drop', (e) => {
-                area.classList.remove('drag-over');
-                processFile(e.dataTransfer.files[0]);
-            });
-
-            function processFile(file) {
-                if(!file || !file.type.startsWith('image/')) return alert('Solo imágenes');
-                if(file.size > 800 * 1024) return alert('Imagen muy pesada (Máx 800kb para esta demo)');
-                
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    preview.innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">`;
-                    callback(e.target.result);
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        setupUpload('newBikeUploadArea', 'newBikeFile', 'newBikePreview', (base64) => newBikePhotoBase64 = base64);
-        setupUpload('stageUploadArea', 'stageFile', 'stagePreview', (base64) => newStagePhotoBase64 = base64);
-
-
-        // --- 2. LOGICA FIREBASE ---
-
         // AUTH
         onAuthStateChanged(auth, (user) => {
-            const loginForm = document.getElementById('loginFormContainer');
-            const actions = document.getElementById('adminActionsContainer');
-            const mainPanel = document.getElementById('mainAdminSection');
-            
             if (user) {
-                loginForm.style.display = 'none';
-                actions.style.display = 'block';
-                mainPanel.classList.add('active'); // Mostrar panel grande
-                // Scrollear al panel si acabamos de loguear
-                if(!localStorage.getItem('wasLogged')) {
-                    mainPanel.scrollIntoView({behavior: 'smooth'});
-                    localStorage.setItem('wasLogged', 'true');
-                }
+                document.getElementById('loginFormContainer').style.display = 'none';
+                document.getElementById('adminActionsContainer').style.display = 'block';
+                document.getElementById('mainAdminSection').classList.add('active');
             } else {
-                loginForm.style.display = 'block';
-                actions.style.display = 'none';
-                mainPanel.classList.remove('active');
-                localStorage.removeItem('wasLogged');
+                document.getElementById('loginFormContainer').style.display = 'block';
+                document.getElementById('adminActionsContainer').style.display = 'none';
+                document.getElementById('mainAdminSection').classList.remove('active');
             }
         });
 
         document.getElementById('loginBtnAction').addEventListener('click', async () => {
-            const email = document.getElementById('menuEmail').value;
-            const pass = document.getElementById('menuPass').value;
             try {
-                await signInWithEmailAndPassword(auth, email, pass);
+                await signInWithEmailAndPassword(auth, document.getElementById('menuEmail').value, document.getElementById('menuPass').value);
                 alert("Bienvenido Admin");
             } catch (e) { alert("Error: " + e.message); }
         });
-
         document.getElementById('btnLogoutAction').addEventListener('click', () => signOut(auth));
-        document.getElementById('btnShowPanel').addEventListener('click', () => {
-            document.getElementById('mainAdminSection').scrollIntoView({behavior:'smooth'});
-            adminMenu.classList.remove('active');
-            adminMenuBtn.classList.remove('active');
-        });
+        document.getElementById('btnShowPanel').addEventListener('click', () => document.getElementById('mainAdminSection').scrollIntoView({behavior:'smooth'}));
 
+        // HELPER FOTOS
+        function setupMiniUpload(boxId, inputId, previewId, key) {
+            const box = document.getElementById(boxId);
+            const input = document.getElementById(inputId);
+            const prev = document.getElementById(previewId);
 
-        // BASE DE DATOS (Leer en tiempo real)
-        const q = query(bikesCol, orderBy("createdAt", "desc"));
-        onSnapshot(q, (snapshot) => {
+            box.addEventListener('click', () => input.click());
+            input.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if(file) {
+                    // Compression simple logic here if needed
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        prev.innerHTML = `<img src="${ev.target.result}">`;
+                        if(key) compPhotos[key] = ev.target.result; // Save to object
+                        else newBikePhoto = ev.target.result; // Save main photo
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        
+        setupMiniUpload('newBikeUploadArea', 'newBikeFile', 'newBikePreview', null);
+        setupMiniUpload('uploadAntes', 'fileAntes', 'previewAntes', 'antes');
+        setupMiniUpload('uploadLimpio', 'fileLimpio', 'previewLimpio', 'limpio');
+        setupMiniUpload('uploadEngrasado', 'fileEngrasado', 'previewEngrasado', 'engrasado');
+
+        // DATABASE LOAD
+        onSnapshot(query(bikesCol, orderBy("createdAt", "desc")), (snapshot) => {
             localBikes = [];
             const grid = document.getElementById('bikesGrid');
-            const selector = document.getElementById('bikeSelector');
-            
+            const sel = document.getElementById('bikeSelector');
             grid.innerHTML = '';
-            selector.innerHTML = '<option value="">-- Seleccionar para editar --</option>';
+            sel.innerHTML = '<option value="">-- Seleccionar --</option>';
 
-            if (snapshot.empty) {
-                grid.innerHTML = '<p style="text-align:center; width:100%;">No hay bicis en taller.</p>';
-                return;
-            }
+            if(snapshot.empty) grid.innerHTML = '<p style="text-align:center;">No hay bicicletas.</p>';
 
             snapshot.forEach(docSnap => {
                 const bike = { id: docSnap.id, ...docSnap.data() };
                 localBikes.push(bike);
                 
-                // Renderizar Tarjeta en Grid
-                renderBikeCard(bike, grid);
+                // Add to Grid
+                const card = document.createElement('div');
+                card.className = 'bike-card visible';
+                card.innerHTML = `
+                    <img src="${bike.photo}" class="bike-image">
+                    <div class="bike-info">
+                        <h3>${bike.model}</h3>
+                        <p>${bike.client}</p>
+                        <span class="bike-status status-${bike.status}">${bike.status.toUpperCase()}</span>
+                    </div>`;
+                
+                // CLICK EVENT (EXPANDED VIEW - UPDATED)
+                card.addEventListener('click', () => openExpandedView(bike, card));
+                grid.appendChild(card);
 
-                // Agregar al selector del admin
+                // Add to Select
                 const opt = document.createElement('option');
                 opt.value = bike.id;
-                opt.text = `${bike.model} (${bike.client})`;
-                selector.appendChild(opt);
+                opt.text = `${bike.model} - ${bike.client}`;
+                sel.appendChild(opt);
             });
         });
 
-        // FUNCIONES DE RENDERIZADO
-        function renderBikeCard(bike, container) {
-            const statusClasses = { 'diagnostico': 'status-diagnostico', 'reparacion': 'status-reparacion', 'listo': 'status-listo', 'entregado': 'status-entregado' };
-            const statusTexts = { 'diagnostico': 'En Diagnóstico', 'reparacion': 'En Reparación', 'listo': 'Lista para Retiro', 'entregado': 'Entregada' };
-            
-            const card = document.createElement('div');
-            card.className = 'bike-card visible';
-            card.innerHTML = `
-                <img src="${bike.photo}" class="bike-image">
-                <div class="bike-info">
-                    <h3>${bike.model}</h3>
-                    <p><strong>${bike.client}</strong></p>
-                    <span class="bike-status ${statusClasses[bike.status]}">${statusTexts[bike.status]}</span>
-                </div>
-            `;
-            
-            // Evento Click para Expandir (Modal)
-            card.addEventListener('click', (e) => {
-                if(card.classList.contains('expanded')) return;
-                // Colapsar otras
-                document.querySelectorAll('.bike-card.expanded').forEach(c => {
-                    c.classList.remove('expanded'); 
-                    const existingContent = c.querySelector('.expanded-content');
-                    if(existingContent) existingContent.remove();
-                });
-
-                card.classList.add('expanded');
-                
-                // Generar contenido expandido
-                const content = document.createElement('div');
-                content.className = 'expanded-content';
-                content.style.padding = "0 20px 40px";
-                
-                // HTML de etapas
-                let stagesHtml = '';
-                if(bike.stages && bike.stages.length > 0) {
-                    stagesHtml = `<div class="stages-grid">` + 
-                        bike.stages.map(s => `
-                            <div class="stage-card">
-                                <img src="${s.photo}" class="stage-image">
-                                <div class="stage-info"><div class="stage-name">${s.name}</div></div>
-                            </div>
-                        `).join('') + `</div>`;
-                } else {
-                    stagesHtml = '<p style="color:#999;">Sin avances registrados aún.</p>';
-                }
-
-                content.innerHTML = `
-                    <div class="close-btn"><i class="fas fa-times"></i></div>
-                    <div style="max-width:800px; margin:0 auto; text-align:left;">
-                        <h2 style="margin-top:20px; color:var(--primary);">${bike.model}</h2>
-                        <p><strong>Cliente:</strong> ${bike.client}</p>
-                        <p><strong>Problema:</strong> ${bike.notes}</p>
-                        <p style="background:#eee; padding:5px; display:inline-block; border-radius:5px; margin-top:10px;">
-                            Código: <strong>${bike.trackingCode}</strong>
-                        </p>
-
-                        <div style="margin-top:30px;">
-                            <h4 style="border-bottom:2px solid var(--primary); display:inline-block; margin-bottom:15px;">Bitácora de Avances</h4>
-                            ${stagesHtml}
-                        </div>
-                    </div>
-                `;
-
-                card.appendChild(content);
-                
-                // Botón cerrar
-                content.querySelector('.close-btn').addEventListener('click', (ev) => {
-                    ev.stopPropagation();
-                    card.classList.remove('expanded');
-                    content.remove();
-                });
+        // VIEW EXPANDED (LOGICA VISUAL NUEVA)
+        function openExpandedView(bike, originalCard) {
+            if(originalCard.classList.contains('expanded')) return;
+            document.querySelectorAll('.bike-card.expanded').forEach(c => {
+                c.classList.remove('expanded'); 
+                if(c.querySelector('.expanded-content')) c.querySelector('.expanded-content').remove();
             });
 
-            container.appendChild(card);
+            originalCard.classList.add('expanded');
+            
+            // Generar HTML de componentes
+            let componentsHtml = '';
+            if(bike.components && bike.components.length > 0) {
+                componentsHtml = bike.components.map(comp => {
+                    // Generar HTML solo para las fotos que existan
+                    let photosHtml = '';
+                    const types = ['antes', 'limpio', 'engrasado'];
+                    
+                    types.forEach(type => {
+                        if(comp.photos && comp.photos[type]) {
+                            photosHtml += `
+                                <div class="photo-item">
+                                    <img src="${comp.photos[type]}">
+                                    <span class="photo-badge badge-${type}">${type}</span>
+                                </div>
+                            `;
+                        }
+                    });
+
+                    return `
+                        <div class="component-group">
+                            <div class="component-title"><i class="fas fa-wrench"></i> ${comp.name}</div>
+                            <div class="photos-row">
+                                ${photosHtml}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                componentsHtml = '<p style="color:#999; text-align:center;">Aún no se han cargado avances visuales.</p>';
+            }
+
+            const content = document.createElement('div');
+            content.className = 'expanded-content';
+            content.innerHTML = `
+                <div class="close-btn"><i class="fas fa-times"></i></div>
+                <h2 style="margin-top:20px; color:var(--primary);">${bike.model}</h2>
+                <p><strong>Cliente:</strong> ${bike.client}</p>
+                <p style="background:#f1f1f1; padding:5px; display:inline-block; border-radius:5px;">Código: <strong>${bike.trackingCode}</strong></p>
+                <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+                ${componentsHtml}
+            `;
+            
+            originalCard.appendChild(content);
+            content.querySelector('.close-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                originalCard.classList.remove('expanded');
+                content.remove();
+            });
         }
 
-        // --- 3. ACCIONES DE GESTIÓN (GUARDAR / EDITAR) ---
-
-        // Guardar Nueva Bici
+        // GUARDAR BICI
         document.getElementById('btnAddBikeDB').addEventListener('click', async () => {
             const client = document.getElementById('customerName').value;
             const model = document.getElementById('bikeModel').value;
@@ -551,98 +495,108 @@
             const status = document.getElementById('initialStatus').value;
 
             if(!client || !model) return alert("Faltan datos");
-
+            
             const trackingCode = 'BICI-' + Math.floor(Math.random()*10000);
-            const photo = newBikePhotoBase64 || "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&w=500&q=60";
+            const photo = newBikePhoto || "https://via.placeholder.com/500x300?text=Bici";
 
             try {
                 await addDoc(bikesCol, {
                     client, model, notes, status, trackingCode, photo,
-                    stages: [],
+                    components: [], // Array vacio para los componentes nuevos
                     createdAt: new Date()
                 });
-                alert("Bicicleta guardada! Código: " + trackingCode);
-                // Reset form
+                alert("Guardada! Cod: " + trackingCode);
                 document.getElementById('customerName').value = '';
-                document.getElementById('bikeModel').value = '';
-                newBikePhotoBase64 = null;
+                newBikePhoto = null;
                 document.getElementById('newBikePreview').innerHTML = '';
-            } catch(e) { console.error(e); alert("Error al guardar"); }
+            } catch(e) { console.error(e); alert("Error"); }
         });
 
-        // Selector de Edición
+        // EDITAR SELECCION
         document.getElementById('bikeSelector').addEventListener('change', (e) => {
             const id = e.target.value;
-            const editArea = document.getElementById('editArea');
-            if(!id) {
-                editArea.style.display = 'none';
-                currentEditingId = null;
-                return;
-            }
+            if(!id) { document.getElementById('editArea').style.display = 'none'; return; }
+            currentEditingId = id;
+            document.getElementById('editArea').style.display = 'block';
             const bike = localBikes.find(b => b.id === id);
-            if(bike) {
-                currentEditingId = id;
-                editArea.style.display = 'block';
-                document.getElementById('lblEditingBike').innerText = bike.model;
-                document.getElementById('editStatusSelect').value = bike.status;
-            }
+            document.getElementById('lblEditingBike').innerText = bike.model;
+            document.getElementById('editStatusSelect').value = bike.status;
         });
 
-        // Actualizar Estado
+        // ACTUALIZAR ESTADO
         document.getElementById('btnUpdateStatus').addEventListener('click', async () => {
             if(!currentEditingId) return;
-            const newStatus = document.getElementById('editStatusSelect').value;
-            await updateDoc(doc(db, "bicicletas", currentEditingId), { status: newStatus });
+            await updateDoc(doc(db, "bicicletas", currentEditingId), { status: document.getElementById('editStatusSelect').value });
             alert("Estado actualizado");
         });
 
-        // Agregar Etapa
-        document.getElementById('btnAddStage').addEventListener('click', async () => {
+        // GUARDAR COMPONENTE (La lógica de las 3 fotos)
+        document.getElementById('btnAddComponent').addEventListener('click', async () => {
             if(!currentEditingId) return;
-            const title = document.getElementById('stageTitle').value;
-            if(!title || !newStagePhotoBase64) return alert("Ingresa nombre y foto");
+            const name = document.getElementById('compName').value;
+            if(!name) return alert("Ponle nombre al componente (Ej: Motor)");
 
-            const newStage = {
-                name: title,
-                photo: newStagePhotoBase64,
-                date: new Date().toLocaleDateString()
+            // Validar que al menos haya 1 foto
+            if(!compPhotos.antes && !compPhotos.limpio && !compPhotos.engrasado) {
+                return alert("Sube al menos una foto para este componente");
+            }
+
+            const newComponent = {
+                name: name,
+                photos: { ...compPhotos } // Copia solo las que tengan datos (o null)
             };
 
-            await updateDoc(doc(db, "bicicletas", currentEditingId), {
-                stages: arrayUnion(newStage)
+            // Limpiar claves null para no guardar basura en DB
+            Object.keys(newComponent.photos).forEach(key => {
+                if (newComponent.photos[key] === null) {
+                    delete newComponent.photos[key];
+                }
             });
-            
-            alert("Avance agregado");
-            document.getElementById('stageTitle').value = '';
-            newStagePhotoBase64 = null;
-            document.getElementById('stagePreview').innerHTML = '';
+
+            await updateDoc(doc(db, "bicicletas", currentEditingId), {
+                components: arrayUnion(newComponent)
+            });
+
+            alert("Componente agregado con éxito");
+            // Reset fields
+            document.getElementById('compName').value = '';
+            document.getElementById('fileAntes').value = '';
+            document.getElementById('fileLimpio').value = '';
+            document.getElementById('fileEngrasado').value = '';
+            document.getElementById('previewAntes').innerHTML = '';
+            document.getElementById('previewLimpio').innerHTML = '';
+            document.getElementById('previewEngrasado').innerHTML = '';
+            compPhotos = { antes: null, limpio: null, engrasado: null };
         });
 
-        // Eliminar
+        // BORRAR
         document.getElementById('btnDeleteBike').addEventListener('click', async () => {
-            if(!currentEditingId) return;
-            if(confirm("¿Borrar definitivamente?")) {
+            if(confirm("¿Eliminar bici?")) {
                 await deleteDoc(doc(db, "bicicletas", currentEditingId));
-                alert("Eliminada");
                 document.getElementById('editArea').style.display = 'none';
             }
         });
 
-        // BÚSQUEDA PÚBLICA (Tracking)
+        // BUSQUEDA
         document.getElementById('btnSearch').addEventListener('click', () => {
             const code = document.getElementById('searchInput').value.trim();
-            const results = document.getElementById('searchResults');
-            results.style.display = 'block';
-            results.innerHTML = '';
-
+            const res = document.getElementById('searchResults');
+            res.style.display = 'block';
+            res.innerHTML = '';
             const found = localBikes.find(b => b.trackingCode === code);
             if(found) {
-                renderBikeCard(found, results); // Reutilizamos la función de render
+                // Reutilizamos la lógica de renderCard pero la insertamos aquí
+                const dummyContainer = document.createElement('div');
+                // Llamamos a la lógica interna de la card para no duplicar código visual complejo
+                // Pero para simplificar en búsqueda:
+                res.innerHTML = `<div class="bike-card visible" style="border:2px solid var(--primary);">
+                    <h3>${found.model}</h3><p>${found.client}</p><p>Estado: ${found.status}</p>
+                    <p style="font-size:0.8rem; color:#666;">Haz click en el listado general para ver detalles.</p>
+                </div>`;
             } else {
-                results.innerHTML = '<p style="color:red;">No encontrado. Revisa el código.</p>';
+                res.innerHTML = '<p style="color:red;">No encontrado</p>';
             }
         });
-
     </script>
 </body>
 </html>
