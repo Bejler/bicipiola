@@ -303,7 +303,7 @@
             <label><input type="checkbox" id="svcVisible" style="width:auto;"> Visible</label>
             <div style="display:flex; gap:10px; margin-top:15px;">
                 <button class="btn" id="btnSaveService">Guardar</button>
-                <button class="btn" style="background:#95a5a6;" onclick="document.getElementById('serviceModal').classList.remove('active')">Cancelar</button>
+                <button class="btn" style="background:#95a5a6;" onclick="document.getElementById('serviceModal').style.display='none'">Cancelar</button>
             </div>
         </div>
     </div>
@@ -315,24 +315,7 @@
                 <p>Mantención profesional garantizada</p>
             </div>
             <div class="services-grid" id="publicServicesGrid">
-                <div class="service-card animate-on-scroll">
-                    <div class="service-icon"><i class="fas fa-tools"></i></div>
-                    <h3>Mantención Básica</h3>
-                    <div class="service-price">$25.000</div>
-                    <div class="service-details"><ul><li>Ajuste y lubricación transmisión</li><li>Ajuste de frenos</li><li>Limpieza exterior</li></ul></div>
-                </div>
-                <div class="service-card animate-on-scroll">
-                    <div class="service-icon"><i class="fas fa-cogs"></i></div>
-                    <h3>Mantención General</h3>
-                    <div class="service-price">$30.000</div>
-                    <div class="service-details"><ul><li>Mantención básica completa</li><li>Engrasado completo</li><li>Cambio de piolas</li></ul></div>
-                </div>
-                <div class="service-card animate-on-scroll">
-                    <div class="service-icon"><i class="fas fa-bicycle"></i></div>
-                    <h3>Ajuste de Cambios</h3>
-                    <div class="service-price">$10.000</div>
-                    <div class="service-details"><ul><li>Ajuste preciso</li><li>Lubricación de cables</li><li>Verificación desgaste</li></ul></div>
-                </div>
+                <p style="text-align:center; width:100%;">Cargando servicios...</p>
             </div>
         </div>
     </section>
@@ -509,7 +492,6 @@
                 const tallerSec = document.getElementById('taller');
                 if(data.showTallerLive === false) tallerSec.classList.add('hidden');
                 else tallerSec.classList.remove('hidden');
-                // Admin Inputs
                 document.getElementById('confHeroTitle').value = data.heroTitle || '';
                 document.getElementById('confHeroSubtitle').value = data.heroSubtitle || '';
                 document.getElementById('confWhatsapp').value = data.whatsapp || '';
@@ -527,19 +509,28 @@
             showNotif("Configuración Guardada");
         };
 
-        // --- 2. GESTIÓN SERVICIOS ---
+        // --- 2. GESTIÓN SERVICIOS (CON AUTO-INIT) ---
         const servicesCol = collection(db, 'services');
-        onSnapshot(query(servicesCol, orderBy('order')), (snap) => {
+        onSnapshot(query(servicesCol, orderBy('order')), async (snap) => {
             const adminList = document.getElementById('servicesListAdmin');
             const publicGrid = document.getElementById('publicServicesGrid');
-            
-            // Si hay datos en Firebase, limpiamos los hardcodeados. Si no, dejamos los hardcodeados.
-            if(!snap.empty) publicGrid.innerHTML = '';
             adminList.innerHTML = '';
+            publicGrid.innerHTML = '';
+
+            // AUTO-SEED: Si no hay servicios, creamos los 3 por defecto
+            if(snap.empty && !localStorage.getItem('servicesSeeded')) {
+                const defaults = [
+                    { title: "Mantención Básica", price: "$25.000", icon: "fa-tools", details: "Ajuste y lubricación transmisión, Ajuste de frenos, Limpieza exterior", visible: true, order: 1 },
+                    { title: "Mantención General", price: "$30.000", icon: "fa-cogs", details: "Mantención básica completa, Engrasado completo, Cambio de piolas", visible: true, order: 2 },
+                    { title: "Ajuste de Cambios", price: "$10.000", icon: "fa-bicycle", details: "Ajuste preciso, Lubricación de cables, Verificación desgaste", visible: true, order: 3 }
+                ];
+                for(const svc of defaults) await addDoc(servicesCol, svc);
+                localStorage.setItem('servicesSeeded', 'true');
+                return; // Se recargará solo
+            }
 
             snap.forEach(d => {
                 const s = { id: d.id, ...d.data() };
-                
                 const div = document.createElement('div');
                 div.className = 'admin-list-item';
                 div.innerHTML = `
@@ -566,6 +557,7 @@
             });
         });
 
+        // CORRECCIÓN MODAL SERVICIOS
         window.openServiceModal = () => {
             document.getElementById('svcId').value = '';
             document.getElementById('svcTitle').value = '';
@@ -573,7 +565,9 @@
             document.getElementById('svcIcon').value = '';
             document.getElementById('svcDesc').value = '';
             document.getElementById('svcVisible').checked = true;
-            document.getElementById('serviceModal').classList.add('active');
+            // FIX: Display flex para que aparezca
+            document.getElementById('serviceModal').style.display = 'flex';
+            setTimeout(() => document.getElementById('serviceModal').classList.add('active'), 10);
         };
 
         window.editService = async (id) => {
@@ -585,7 +579,9 @@
             document.getElementById('svcIcon').value = s.icon;
             document.getElementById('svcDesc').value = s.details;
             document.getElementById('svcVisible').checked = s.visible;
-            document.getElementById('serviceModal').classList.add('active');
+            // FIX: Display flex
+            document.getElementById('serviceModal').style.display = 'flex';
+            setTimeout(() => document.getElementById('serviceModal').classList.add('active'), 10);
         };
 
         window.delService = async (id) => {
@@ -604,7 +600,9 @@
             };
             if(id) await updateDoc(doc(db, 'services', id), data);
             else await addDoc(servicesCol, data);
+            // Close modal correctly
             document.getElementById('serviceModal').classList.remove('active');
+            setTimeout(() => document.getElementById('serviceModal').style.display = 'none', 300);
         };
 
         // --- 3. GESTIÓN BICICLETAS (CORE) ---
