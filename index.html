@@ -1,106 +1,181 @@
+¡Entendido, Cristóbal! Vamos a llevar esto al nivel "Profesional Avanzado".
+
+He tomado tu código base (el diseño visual) y le he inyectado un **motor lógico robusto** para manejar exactamente lo que pides: **Reportes de Componentes Dinámicos**.
+
+### ¿Qué hace este código nuevo y mejorado?
+
+1. **Sistema de "Reporte de Componente":**
+* En el Admin, tienes 3 casillas: **Antes**, **Limpio** y **Engrasado**.
+* **Inteligencia Visual:** Si subes las 3 fotos, el cliente verá 3 columnas. Si subes solo "Antes" y "Limpio", el cliente verá 2 columnas anchas. Si subes solo 1, verá la foto en pantalla completa. **Nunca quedan espacios vacíos.**
+* Etiquetas automáticas: El sistema pone un letrero pequeño ("ANTES", "LIMPIO", etc.) sobre cada foto para que el cliente entienda qué está viendo.
+
+
+2. **Sistema Híbrido:**
+* Aún conservas la opción de "Foto Simple" (para subir una foto de la bici terminada o un detalle rápido).
+
+
+3. **Persistencia y Seguridad:**
+* Todo conectado a tu Firebase.
+* Validaciones para que no subas reportes sin nombre o sin fotos.
+
+
+
+Aquí tienes el código completo. **Recuerda poner tus credenciales de Firebase al final.**
+
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BICIPIOLA - Taller Profesional</title>
+    <title>BICIPIOLA - Taller Profesional de Bicicletas</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Raleway:wght@800&display=swap" rel="stylesheet">
     <style>
-        /* ESTILOS BASE (IGUAL QUE ANTES) */
+        /* --- ESTILOS BASE (TU CÓDIGO ORIGINAL) --- */
         :root { --primary: #27ae60; --primary-dark: #219653; --secondary: #3498db; --accent: #e74c3c; --dark: #2c3e50; --light: #ecf0f1; --gray: #95a5a6; --light-gray: #f5f7fa; --shadow: 0 4px 20px rgba(0,0,0,0.1); --transition: all 0.4s ease; --radius: 12px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%); color: var(--dark); line-height: 1.6; overflow-x: hidden; position: relative; }
         
         /* Header */
-        header { background-color: rgba(255, 255, 255, 0.95); box-shadow: var(--shadow); position: fixed; width: 100%; top: 0; z-index: 1000; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-family: 'Raleway', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--primary); text-decoration: none; }
+        header { background-color: rgba(255, 255, 255, 0.95); box-shadow: var(--shadow); position: fixed; width: 100%; top: 0; z-index: 1000; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; transition: var(--transition); }
+        .logo { font-family: 'Raleway', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--primary); text-decoration: none; display: flex; align-items: center; }
+        .logo span { color: var(--dark); }
         nav ul { display: flex; list-style: none; } nav ul li { margin-left: 30px; }
-        nav ul li a { text-decoration: none; color: var(--dark); font-weight: 500; }
-        
+        nav ul li a { text-decoration: none; color: var(--dark); font-weight: 500; transition: var(--transition); position: relative; padding: 5px 0; }
+        nav ul li a:hover { color: var(--primary); }
+        nav ul li a::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--primary); transition: var(--transition); }
+        nav ul li a:hover::after { width: 100%; }
+
         /* Menú Admin */
-        .admin-menu-btn { display: flex; flex-direction: column; justify-content: space-between; width: 30px; height: 21px; cursor: pointer; z-index: 1001; }
-        .admin-menu-btn span { height: 3px; width: 100%; background-color: var(--dark); transition: var(--transition); }
-        .admin-menu { position: fixed; top: 0; right: -350px; width: 320px; height: 100vh; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); z-index: 1000; transition: right 0.4s ease; padding: 80px 20px 20px; overflow-y: auto; }
+        .admin-menu-btn { display: flex; flex-direction: column; justify-content: space-between; width: 30px; height: 21px; cursor: pointer; position: relative; z-index: 1001; }
+        .admin-menu-btn span { display: block; height: 3px; width: 100%; background-color: var(--dark); border-radius: 2px; transition: var(--transition); }
+        .admin-menu { position: fixed; top: 0; right: -350px; width: 300px; height: 100vh; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); z-index: 1000; transition: right 0.4s ease; padding: 80px 20px 20px; overflow-y: auto; }
         .admin-menu.active { right: 0; }
         .admin-menu-btn.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
         .admin-menu-btn.active span:nth-child(2) { opacity: 0; }
         .admin-menu-btn.active span:nth-child(3) { transform: rotate(-45deg) translate(7px, -6px); }
+        .admin-menu h3 { margin-bottom: 20px; color: var(--primary); text-align: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+        .admin-menu-item { padding: 12px 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: var(--transition); background: rgba(39, 174, 96, 0.05); border-left: 3px solid var(--primary); }
+        .admin-menu-item:hover { background: rgba(39, 174, 96, 0.15); }
+        .admin-menu-item i { margin-right: 10px; width: 20px; text-align: center; }
 
-        /* Estructura General */
-        .hero { height: 100vh; display: flex; align-items: center; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); background-size: cover; background-position: center; color: white; text-align: center; justify-content: center; }
-        .brand-title { font-family: 'Raleway', sans-serif; font-size: 4rem; font-weight: 800; margin-bottom: 20px; }
-        .btn { padding: 12px 30px; background: var(--primary); color: white; border-radius: 50px; text-decoration: none; display: inline-block; margin: 10px; cursor: pointer; border: none; font-weight: 600; }
-        .section-padding { padding: 100px 5%; }
-        .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 40px; }
+        /* Hero */
+        .hero { height: 100vh; display: flex; align-items: center; position: relative; overflow: hidden; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); background-size: cover; background-position: center; color: white; padding: 0 10%; text-align: center; }
+        .hero-content { max-width: 900px; margin: 0 auto; z-index: 2; transform: translateY(50px); opacity: 0; animation: fadeUp 1s forwards 0.5s; }
+        @keyframes fadeUp { to { transform: translateY(0); opacity: 1; } }
+        .brand-title { font-family: 'Raleway', sans-serif; font-size: 4.5rem; font-weight: 800; margin-bottom: 20px; color: #fff; text-transform: uppercase; letter-spacing: 3px; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .hero h2 { font-size: 2.5rem; margin-bottom: 30px; color: var(--primary); }
+        .hero p { font-size: 1.4rem; margin-bottom: 30px; max-width: 800px; margin-left: auto; margin-right: auto; }
+        .btn { display: inline-block; padding: 15px 35px; background: var(--primary); color: white; border-radius: 50px; text-decoration: none; font-weight: 600; transition: var(--transition); border: none; cursor: pointer; font-size: 1.1rem; margin: 10px 5px; }
+        .btn:hover { background: var(--primary-dark); transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .whatsapp-btn { background: #25D366; display: inline-flex; align-items: center; padding: 15px 30px; }
+        .whatsapp-btn i { margin-right: 10px; font-size: 1.4rem; }
         
-        /* Tarjetas Bici */
-        .bike-card { background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.3s ease; border: 2px solid #eee; }
-        .bike-card:hover { transform: translateY(-5px); border-color: var(--primary); }
-        .bike-image { width: 100%; height: 220px; object-fit: cover; border-bottom: 3px solid var(--primary); }
-        .bike-info { padding: 20px; text-align: center; }
-        .status-badge { padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; color: white; display: inline-block; margin-top: 10px; }
+        /* Servicios */
+        .services { padding: 100px 5%; background: white; }
+        .section-title { text-align: center; margin-bottom: 60px; position: relative; }
+        .section-title h2 { font-size: 2.5rem; color: var(--dark); margin-bottom: 15px; }
+        .section-title p { max-width: 700px; margin: 0 auto; color: var(--gray); font-size: 1.1rem; }
+        .section-title::after { content: ''; position: absolute; width: 100px; height: 4px; background: var(--primary); bottom: -10px; left: 50%; transform: translateX(-50%); border-radius: 2px; }
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; margin-top: 50px; }
+        .service-card { background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: var(--transition); text-align: center; padding: 40px 30px; transform: translateY(30px); opacity: 0; border: 2px solid var(--light-gray); }
+        .service-card.visible { transform: translateY(0); opacity: 1; }
+        .service-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.15); border-color: var(--primary); }
+        .service-icon { width: 80px; height: 80px; background: rgba(39, 174, 96, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px; font-size: 2rem; color: var(--primary); }
+        .service-card h3 { font-size: 1.5rem; margin-bottom: 15px; color: var(--dark); }
+        .service-price { font-size: 1.8rem; font-weight: 700; color: var(--primary); margin: 15px 0; }
+        .service-details { margin-top: 20px; text-align: left; font-size: 0.95rem; color: var(--dark); }
+        .service-details ul { list-style-type: none; padding: 0; }
+        .service-details li { margin-bottom: 8px; padding-left: 20px; position: relative; }
+        .service-details li:before { content: "✓"; position: absolute; left: 0; color: var(--primary); font-weight: bold; }
+
+        /* --- NUEVOS ESTILOS PARA LA LÓGICA DE FOTOS AVANZADA --- */
         
-        /* Modal Expandido */
-        .bike-expanded { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); z-index: 2000; overflow-y: auto; padding: 80px 5% 50px; display: none; }
-        .bike-expanded.active { display: block; animation: fadeIn 0.3s ease; }
-        .close-modal { position: fixed; top: 20px; right: 20px; font-size: 2rem; cursor: pointer; color: var(--dark); z-index: 2001; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- NUEVO ESTILO PARA EL GRID COMPARATIVO --- */
-        .comparison-container { margin-bottom: 30px; background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .comparison-title { font-weight: 700; color: var(--primary); margin-bottom: 10px; border-left: 4px solid var(--primary); padding-left: 10px; font-size: 1.1rem; }
-        .comparison-grid { display: flex; gap: 10px; flex-wrap: wrap; }
-        .comparison-item { flex: 1; min-width: 120px; text-align: center; background: #f9f9f9; padding: 8px; border-radius: 8px; }
-        .comparison-item img { width: 100%; height: 150px; object-fit: cover; border-radius: 6px; margin-bottom: 5px; cursor: pointer; transition: transform 0.2s; }
-        .comparison-item img:hover { transform: scale(1.02); }
-        .comparison-label { font-size: 0.8rem; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 1px; }
-
-        /* Panel Admin */
-        .admin-section { display: none; padding: 100px 5% 50px; background: #f4f4f4; }
+        /* Contenedor del Reporte Comparativo (Cliente) */
+        .comparison-container { margin-bottom: 30px; background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #eee; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .comparison-header { background: var(--light-gray); padding: 10px 15px; font-weight: 700; color: var(--dark); border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .comparison-date { font-size: 0.8rem; color: var(--gray); font-weight: 400; }
+        
+        /* Grid Flexible para 1, 2 o 3 fotos */
+        .comparison-grid { display: flex; width: 100%; }
+        .comparison-item { flex: 1; /* Todos toman el mismo ancho */ position: relative; border-right: 1px solid #eee; }
+        .comparison-item:last-child { border-right: none; }
+        
+        /* Imágenes */
+        .comparison-item img { width: 100%; height: 250px; object-fit: cover; display: block; cursor: pointer; transition: transform 0.3s; }
+        .comparison-item img:hover { filter: brightness(0.9); }
+        
+        /* Etiquetas (Antes, Limpio, Engrasado) */
+        .photo-label { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.6); color: white; text-align: center; padding: 5px 0; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; backdrop-filter: blur(2px); }
+        
+        /* Estilos específicos para uploaders en Admin Panel */
+        .upload-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 15px; }
+        .mini-uploader { border: 2px dashed #bdc3c7; border-radius: 8px; background: #f9f9f9; padding: 10px; text-align: center; cursor: pointer; transition: all 0.3s; position: relative; min-height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .mini-uploader:hover { border-color: var(--primary); background: #e8f5e9; }
+        .mini-uploader i { font-size: 1.5rem; color: #95a5a6; margin-bottom: 5px; }
+        .mini-uploader p { font-size: 0.75rem; color: #7f8c8d; font-weight: 600; text-transform: uppercase; }
+        .mini-uploader img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 6px; display: none; }
+        .mini-uploader.has-file img { display: block; }
+        .mini-uploader.has-file i, .mini-uploader.has-file p { display: none; }
+        
+        /* Modal Expandido (Cliente) */
+        .bike-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; display: none; justify-content: center; align-items: flex-start; overflow-y: auto; padding: 20px; opacity: 0; transition: opacity 0.3s; }
+        .bike-modal-overlay.active { opacity: 1; }
+        .bike-modal-content { background: white; width: 100%; max-width: 900px; border-radius: 15px; margin-top: 40px; padding: 30px; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.3); animation: slideUp 0.4s ease; margin-bottom: 40px; }
+        @keyframes slideUp { from { transform: translateY(50px); } to { transform: translateY(0); } }
+        
+        /* Admin Panel General */
+        .admin-section { display: none; padding: 120px 5% 50px; background: #f8f9fa; }
         .admin-section.active { display: block; }
-        .admin-panel { background: white; padding: 30px; border-radius: var(--radius); border: 2px dashed var(--primary); max-width: 1000px; margin: 0 auto; }
-        .form-group { margin-bottom: 15px; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
+        .admin-card { background: white; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); padding: 30px; border: 1px solid #eee; margin-bottom: 30px; border-top: 4px solid var(--primary); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        input, select, textarea { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; font-family: inherit; font-size: 0.95rem; }
+        label { font-weight: 600; font-size: 0.9rem; margin-bottom: 5px; display: block; color: var(--dark); }
         
-        /* Uploaders Admin */
-        .upload-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 10px; }
-        .mini-upload { border: 2px dashed #ccc; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; background: #fafafa; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100px; }
-        .mini-upload:hover { border-color: var(--primary); background: #e8f5e9; }
-        .mini-upload img { width: 100%; height: 80px; object-fit: cover; border-radius: 4px; margin-top: 5px; display: none; }
-        .mini-upload.has-file img { display: block; }
-        .mini-upload.has-file i { display: none; }
-
-        /* Tabs */
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
-        .tab-btn { background: none; border: none; padding: 10px 20px; font-weight: 600; color: #7f8c8d; cursor: pointer; }
-        .tab-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        /* Footer */
-        footer { background: var(--dark); color: white; padding: 50px 5%; margin-top: 50px; text-align: center; }
+        /* Tracking Publico */
+        .tracking { padding: 100px 5%; background: white; text-align: center; }
+        .tracking-box { background: white; border-radius: var(--radius); box-shadow: var(--shadow); max-width: 800px; margin: 50px auto 0; padding: 50px; }
         
-        /* Utils */
-        .notification { position: fixed; top: 20px; right: 20px; padding: 15px 25px; background: var(--primary); color: white; border-radius: 8px; transform: translateX(150%); transition: transform 0.3s; z-index: 3000; }
+        /* Bicis Grid Publico */
+        .bikes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; margin-top: 50px; }
+        .bike-card { background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: var(--transition); cursor: pointer; border: 1px solid #eee; }
+        .bike-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .bike-cover { width: 100%; height: 220px; object-fit: cover; border-bottom: 3px solid var(--primary); }
+        
+        /* Utilidades */
+        .hidden { display: none !important; }
+        .notification { position: fixed; top: 20px; right: 20px; padding: 15px 25px; border-radius: 8px; background: var(--primary); color: white; box-shadow: var(--shadow); z-index: 6000; transform: translateX(120%); transition: transform 0.4s ease; }
         .notification.show { transform: translateX(0); }
+        .notification.error { background: var(--accent); }
+        
+        /* Tabs Admin */
+        .tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 20px; }
+        .tab-btn { background: none; border: none; padding: 15px 25px; font-weight: 600; color: #95a5a6; cursor: pointer; font-size: 1rem; border-bottom: 3px solid transparent; transition: all 0.3s; }
+        .tab-btn:hover { color: var(--primary); }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .tab-content { display: none; animation: fadeIn 0.4s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         @media (max-width: 768px) {
-            header { padding: 15px; } nav ul { display: none; }
-            .brand-title { font-size: 2.5rem; }
+            .form-row { grid-template-columns: 1fr; }
+            .comparison-grid { flex-direction: column; }
+            .comparison-item { width: 100%; border-right: none; border-bottom: 1px solid #white; }
+            .comparison-item img { height: 200px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="notification" id="notification">Mensaje</div>
+    <div class="notification" id="notification"></div>
 
     <header>
         <a href="#" class="logo">BICIPIOLA</a>
         <nav>
             <ul>
                 <li><a href="#servicios">Servicios</a></li>
-                <li><a href="#taller">Taller en Vivo</a></li>
+                <li><a href="#taller">Taller</a></li>
                 <li><a href="#tracking">Seguimiento</a></li>
             </ul>
         </nav>
@@ -111,142 +186,231 @@
 
     <div class="admin-menu" id="sideMenu">
         <h3>Administración</h3>
-        <div id="loginForm">
-            <input type="email" id="email" placeholder="Email" style="width:100%; margin-bottom:10px; padding:10px;">
-            <input type="password" id="pass" placeholder="Contraseña" style="width:100%; margin-bottom:10px; padding:10px;">
-            <button class="btn" id="btnLogin" style="width:100%;">Entrar</button>
+        <div id="authContainer">
+            <input type="email" id="loginEmail" placeholder="Email Admin">
+            <input type="password" id="loginPass" placeholder="Contraseña">
+            <button class="btn" id="btnLogin" style="width: 100%;">Ingresar</button>
         </div>
-        <div id="adminControls" style="display:none;">
-            <button class="btn" id="btnGoPanel" style="width:100%; margin-bottom:10px;">Ir al Panel de Gestión</button>
-            <button class="btn" id="btnLogout" style="width:100%; background:var(--accent);">Salir</button>
+        <div id="adminControls" class="hidden">
+            <p style="text-align:center; color: var(--primary); font-weight:600; margin-bottom:15px;">Sesión Activa</p>
+            <div class="admin-menu-item" onclick="scrollToAdmin()">
+                <i class="fas fa-tools"></i> Ir al Panel de Gestión
+            </div>
+            <div class="admin-menu-item" id="btnLogout" style="background: rgba(231, 76, 60, 0.1); border-left-color: var(--accent);">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </div>
         </div>
     </div>
 
     <section class="hero">
-        <div style="z-index: 2;">
+        <div class="hero-content">
             <div class="brand-title">BICIPIOLA</div>
             <h2>Taller Profesional</h2>
-            <div style="margin-top: 20px;">
-                <a href="#tracking" class="btn">Ver mi Bici</a>
-                <a href="https://wa.me/56933755577" class="btn" style="background:#25D366;"><i class="fab fa-whatsapp"></i> Contactar</a>
+            <p>Mantención detallada con seguimiento fotográfico real.</p>
+            <div class="hero-btns">
+                <a href="#taller" class="btn">Ver Trabajos</a>
+                <a href="https://wa.me/56933755577" class="btn whatsapp-btn"><i class="fab fa-whatsapp"></i> Contactar</a>
             </div>
         </div>
     </section>
 
-    <section class="admin-section" id="adminSection">
-        <div class="admin-panel">
-            <h2 style="color:var(--primary); margin-bottom:20px;">Panel de Gestión</h2>
+    <section class="admin-section" id="adminPanelSection">
+        <div class="container" style="max-width: 1000px; margin: 0 auto;">
+            <h2 style="margin-bottom: 20px; color: var(--dark);">Panel de Control</h2>
             
-            <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('tab1')">Nueva Bicicleta</button>
-                <button class="tab-btn" onclick="switchTab('tab2')">Editar / Fotos</button>
-            </div>
+            <div class="admin-card">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="openTab('tabNew')">Nueva Bicicleta</button>
+                    <button class="tab-btn" onclick="openTab('tabEdit')">Gestionar / Fotos</button>
+                </div>
 
-            <div id="tab1" class="tab-content active">
-                <div class="form-group">
-                    <input type="text" id="newClient" placeholder="Nombre Cliente">
-                </div>
-                <div class="form-group">
-                    <input type="text" id="newModel" placeholder="Modelo Bicicleta">
-                </div>
-                <div class="form-group">
-                    <textarea id="newNotes" placeholder="Problema inicial..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Foto Portada:</label>
-                    <div class="mini-upload" id="coverUpload">
-                        <i class="fas fa-camera"></i> <span>Toca para subir</span>
-                        <img id="coverPreview">
-                        <input type="file" id="coverFile" hidden accept="image/*">
+                <div id="tabNew" class="tab-content active">
+                    <div class="form-row">
+                        <div>
+                            <label>Cliente</label>
+                            <input type="text" id="newClient" placeholder="Nombre completo">
+                        </div>
+                        <div>
+                            <label>Modelo Bici</label>
+                            <input type="text" id="newModel" placeholder="Marca y modelo">
+                        </div>
                     </div>
-                </div>
-                <button class="btn" id="btnSaveBike" style="width:100%;">Ingresar Bicicleta</button>
-            </div>
-
-            <div id="tab2" class="tab-content">
-                <div class="form-group">
-                    <select id="bikeSelector"><option>Cargando...</option></select>
-                </div>
-
-                <div id="editArea" style="display:none; border-top:2px solid #eee; padding-top:20px;">
-                    <h3 id="editingLabel" style="color:var(--primary);"></h3>
+                    <label>Diagnóstico Inicial</label>
+                    <textarea id="newNotes" placeholder="Detalle del trabajo a realizar..."></textarea>
                     
-                    <div class="form-group" style="background:#fafafa; padding:15px; border-radius:8px;">
-                        <label>Estado:</label>
-                        <select id="editStatus">
-                            <option value="diagnostico">En Diagnóstico</option>
-                            <option value="reparacion">En Reparación</option>
-                            <option value="listo">Lista para entregar</option>
-                            <option value="entregado">Entregada</option>
+                    <label>Foto de Portada</label>
+                    <div class="mini-uploader" id="coverUploader" style="max-width: 100%; height: 200px;">
+                        <i class="fas fa-camera"></i>
+                        <p>Toca para subir foto de la bici</p>
+                        <img id="coverPreview">
+                        <input type="file" id="coverInput" hidden accept="image/*">
+                    </div>
+                    
+                    <button class="btn" id="btnSaveBike" style="width: 100%; margin-top: 20px;">Ingresar Bicicleta al Sistema</button>
+                </div>
+
+                <div id="tabEdit" class="tab-content">
+                    <div style="background: #e8f6f3; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <label style="color: var(--primary);">Seleccionar Bicicleta Activa:</label>
+                        <select id="bikeSelector" style="margin-bottom: 0; background: white;">
+                            <option value="">Cargando lista...</option>
                         </select>
-                        <button class="btn" id="btnUpdateStatus" style="margin-top:10px; padding:5px 15px;">Actualizar</button>
                     </div>
 
-                    <div class="form-group" style="background:#e8f5e9; padding:15px; border-radius:8px; border:1px solid var(--primary);">
-                        <h4 style="margin-bottom:10px;"><i class="fas fa-camera"></i> Agregar Reporte de Componente</h4>
-                        <input type="text" id="compName" placeholder="Nombre (Ej: Motor, Transmisión, Rueda Trasera)" style="margin-bottom:10px;">
+                    <div id="editArea" class="hidden">
                         
-                        <div class="upload-row">
-                            <div class="mini-upload" id="upBefore">
-                                <span>1. Antes</span>
-                                <img id="prevBefore">
-                                <input type="file" id="fileBefore" hidden accept="image/*">
+                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 20px;">
+                            <div style="flex: 1;">
+                                <label>Estado Actual:</label>
+                                <select id="editStatus">
+                                    <option value="diagnostico">En Diagnóstico</option>
+                                    <option value="reparacion">En Reparación</option>
+                                    <option value="listo">Lista para Entregar</option>
+                                    <option value="entregado">Entregada / Historial</option>
+                                </select>
                             </div>
-                            <div class="mini-upload" id="upClean">
-                                <span>2. Limpio</span>
-                                <img id="prevClean">
-                                <input type="file" id="fileClean" hidden accept="image/*">
-                            </div>
-                            <div class="mini-upload" id="upGreased">
-                                <span>3. Engrasado</span>
-                                <img id="prevGreased">
-                                <input type="file" id="fileGreased" hidden accept="image/*">
-                            </div>
+                            <button class="btn" id="btnUpdateStatus" style="margin-top: 12px; padding: 10px 20px;">Actualizar</button>
                         </div>
-                        <small style="display:block; color:#666; margin:5px 0;">* Sube solo las que necesites (Ej: Solo Antes y Limpio). El sistema acomodará el diseño.</small>
-                        <button class="btn" id="btnSaveComponent" style="width:100%; margin-top:10px;">Guardar Reporte</button>
-                    </div>
 
-                    <div class="form-group" style="background:#fafafa; padding:15px; border-radius:8px; margin-top:15px;">
-                        <h4><i class="fas fa-image"></i> Agregar Foto Simple (Ej: Bici Terminada)</h4>
-                        <input type="text" id="simpleName" placeholder="Título (Ej: Bici Lista)" style="margin-bottom:10px;">
-                        <div class="mini-upload" id="upSimple">
-                            <span>Foto Única</span>
-                            <img id="prevSimple">
-                            <input type="file" id="fileSimple" hidden accept="image/*">
+                        <div style="background: #fdfefe; border: 2px dashed #bdc3c7; border-radius: 12px; padding: 20px; margin-bottom: 30px;">
+                            <h4 style="color: var(--dark); margin-bottom: 15px;"><i class="fas fa-camera-retro"></i> Agregar Reporte de Componente</h4>
+                            <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 15px;">Sube 1, 2 o las 3 fotos. El sistema ordenará visualmente el reporte automáticamente.</p>
+                            
+                            <input type="text" id="reportName" placeholder="Nombre del Componente (Ej: Motor, Maza Trasera, Pata de Cambio)">
+                            
+                            <div class="upload-grid-3">
+                                <div class="mini-uploader" id="upBefore">
+                                    <i class="fas fa-history"></i>
+                                    <p>1. Antes</p>
+                                    <img id="prevBefore">
+                                    <input type="file" id="fileBefore" hidden accept="image/*">
+                                </div>
+                                <div class="mini-uploader" id="upClean">
+                                    <i class="fas fa-sparkles"></i>
+                                    <p>2. Limpio</p>
+                                    <img id="prevClean">
+                                    <input type="file" id="fileClean" hidden accept="image/*">
+                                </div>
+                                <div class="mini-uploader" id="upGreased">
+                                    <i class="fas fa-oil-can"></i>
+                                    <p>3. Engrasado</p>
+                                    <img id="prevGreased">
+                                    <input type="file" id="fileGreased" hidden accept="image/*">
+                                </div>
+                            </div>
+                            <button class="btn" id="btnSaveReport" style="width: 100%; margin-top: 15px;">Guardar Reporte de Componente</button>
                         </div>
-                        <button class="btn" id="btnSaveSimple" style="width:100%; margin-top:10px;">Guardar Foto Simple</button>
-                    </div>
 
-                    <button class="btn" id="btnDelete" style="background:var(--accent); width:100%; margin-top:20px;">Eliminar Bicicleta</button>
+                        <div style="background: #fafafa; border-radius: 8px; padding: 15px;">
+                            <h5 style="margin-bottom: 10px;">Opción Alternativa: Foto Simple</h5>
+                            <input type="text" id="simpleName" placeholder="Título (Ej: Bici Terminada)">
+                            <div class="mini-uploader" id="upSimple" style="height: 100px;">
+                                <i class="fas fa-image"></i><p>Foto Única</p>
+                                <img id="prevSimple">
+                                <input type="file" id="fileSimple" hidden accept="image/*">
+                            </div>
+                            <button class="btn" id="btnSaveSimple" style="width: 100%; margin-top: 10px; background: var(--secondary);">Subir Foto Simple</button>
+                        </div>
+
+                        <button class="btn" id="btnDeleteBike" style="background: var(--accent); margin-top: 30px; width: 100%;">Eliminar Bicicleta del Sistema</button>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="section-padding" id="taller">
-        <h2 style="text-align:center;">Estado del Taller</h2>
-        <div class="grid-cards" id="publicGrid">
-            <p style="text-align:center; width:100%;">Cargando...</p>
+    <section id="servicios" class="services">
+        <div class="container">
+            <div class="section-title">
+                <h2>Servicios</h2>
+                <p>Estándar profesional en cada tornillo</p>
+            </div>
+            <div class="services-grid">
+                <div class="service-card animate-on-scroll">
+                    <div class="service-icon"><i class="fas fa-tools"></i></div>
+                    <h3>Mantención Básica</h3>
+                    <div class="service-price">$25.000</div>
+                    <div class="service-details">
+                        <ul>
+                            <li>Regulación cambios y frenos</li>
+                            <li>Lubricación transmisión</li>
+                            <li>Apriete general y seguridad</li>
+                            <li>Limpieza superficial</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="service-card animate-on-scroll">
+                    <div class="service-icon"><i class="fas fa-cogs"></i></div>
+                    <h3>Mantención Full</h3>
+                    <div class="service-price">$45.000</div>
+                    <div class="service-details">
+                        <ul>
+                            <li>Todo lo de la básica</li>
+                            <li>Desarme y limpieza transmisión</li>
+                            <li>Engrase de dirección y mazas</li>
+                            <li>Centrado de ruedas</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="service-card animate-on-scroll">
+                    <div class="service-icon"><i class="fas fa-bicycle"></i></div>
+                    <h3>Armado y Especiales</h3>
+                    <div class="service-price">Cotizar</div>
+                    <div class="service-details">
+                        <ul>
+                            <li>Sangrado de frenos hidr.</li>
+                            <li>Instalación de tubeless</li>
+                            <li>Cambio de rodamientos</li>
+                            <li>Armado desde caja</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
-    
-    <section class="section-padding" id="tracking" style="background:white;">
-        <h2 style="text-align:center;">Seguimiento</h2>
-        <div style="max-width:500px; margin:20px auto; display:flex;">
-            <input type="text" id="searchInput" placeholder="Código (BICI-XXXX)" style="flex:1; padding:10px; border:1px solid #ddd; border-radius: 50px 0 0 50px; text-align:center;">
-            <button class="btn" id="btnSearch" style="margin:0; border-radius: 0 50px 50px 0;">Buscar</button>
+
+    <section id="taller" class="bikes-section">
+        <div class="container">
+            <div class="section-title">
+                <h2>Taller en Vivo</h2>
+                <p>Haz clic en una bicicleta para ver su bitácora detallada</p>
+            </div>
+            <div class="bikes-grid" id="publicBikesGrid">
+                <p style="width: 100%; text-align: center;">Cargando trabajos...</p>
+            </div>
         </div>
-        <div id="searchResult" style="max-width:600px; margin:20px auto;"></div>
+    </section>
+
+    <section id="tracking" class="tracking">
+        <div class="tracking-box animate-on-scroll">
+            <h3>Seguimiento Rápido</h3>
+            <p>Si tienes tu código, ingrésalo aquí:</p>
+            <div class="search-box">
+                <input type="text" id="searchCode" placeholder="Ej: BICI-9382">
+                <button class="search-btn" id="btnSearch">Buscar</button>
+            </div>
+        </div>
     </section>
 
     <footer>
-        <p>&copy; 2026 BICIPIOLA.</p>
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4>BICIPIOLA</h4>
+                <p>Concón, Valparaíso</p>
+                <div class="social-links" style="justify-content: center;">
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>&copy; 2026 BICIPIOLA. Todos los derechos reservados.</p>
+        </div>
     </footer>
 
-    <div class="bike-expanded" id="bikeModal">
-        <div class="close-modal" onclick="closeModal()">&times;</div>
-        <div id="modalContent" style="max-width:800px; margin:0 auto;"></div>
+    <div class="bike-modal-overlay" id="bikeModal">
+        <div class="bike-modal-content" id="modalContent">
+            </div>
     </div>
 
     <script type="module">
@@ -254,7 +418,9 @@
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // TUS CREDENCIALES
+        // ==========================================
+        //  TUS CREDENCIALES (PEGAR AQUI ABAJO)
+        // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyA0Cg0zMBVpgicANllyMJB7NbcFkbcxGSw",
             authDomain: "bicipiola-4efb8.firebaseapp.com",
@@ -270,309 +436,386 @@
         const auth = getAuth(app);
         const bikesCol = collection(db, "bicicletas");
 
-        // Variables
+        // Variables de estado
         let localBikes = [];
         let currentEditingId = null;
         let fileCache = { cover:null, before:null, clean:null, greased:null, simple:null };
 
-        // --- UI HELPERS ---
-        window.switchTab = (id) => {
-            document.querySelectorAll('.tab-content').forEach(d => d.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            // Hack para resaltar boton
+        // --- UI & TABS ---
+        window.openTab = (tabId) => {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
             event.target.classList.add('active');
         };
 
-        window.closeModal = () => document.getElementById('bikeModal').classList.remove('active');
+        window.scrollToAdmin = () => {
+            document.getElementById('sideMenu').classList.remove('active');
+            document.getElementById('menuBtn').classList.remove('active');
+            document.getElementById('adminPanelSection').scrollIntoView({ behavior: 'smooth' });
+        };
 
+        // Scroll Animations
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('visible'); });
+        });
+        document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+
+        // Menú Toggle
+        document.getElementById('menuBtn').addEventListener('click', function() {
+            this.classList.toggle('active');
+            document.getElementById('sideMenu').classList.toggle('active');
+        });
+
+        // Configurar Uploaders (Generico)
         function setupUploader(divId, inputId, imgId, key) {
             const div = document.getElementById(divId);
-            const inp = document.getElementById(inputId);
+            const input = document.getElementById(inputId);
             const img = document.getElementById(imgId);
+
+            div.addEventListener('click', () => input.click());
             
-            div.addEventListener('click', () => inp.click());
-            inp.addEventListener('change', (e) => {
+            input.addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 if(file) {
+                    if(file.size > 1024 * 1024) return showNotif("Imagen muy pesada (Max 1MB)", true);
                     const reader = new FileReader();
                     reader.onload = (ev) => {
                         img.src = ev.target.result;
                         div.classList.add('has-file');
-                        fileCache[key] = ev.target.result; // Guardar base64
+                        fileCache[key] = ev.target.result;
                     };
                     reader.readAsDataURL(file);
                 }
             });
         }
 
-        // Configurar todos los uploaders
-        setupUploader('coverUpload', 'coverFile', 'coverPreview', 'cover');
+        // Inicializar Uploaders
+        setupUploader('coverUploader', 'coverInput', 'coverPreview', 'cover');
         setupUploader('upBefore', 'fileBefore', 'prevBefore', 'before');
         setupUploader('upClean', 'fileClean', 'prevClean', 'clean');
         setupUploader('upGreased', 'fileGreased', 'prevGreased', 'greased');
         setupUploader('upSimple', 'fileSimple', 'prevSimple', 'simple');
 
-        // --- AUTH ---
-        const menuBtn = document.getElementById('menuBtn');
-        const sideMenu = document.getElementById('sideMenu');
-        menuBtn.addEventListener('click', () => {
-            menuBtn.classList.toggle('active');
-            sideMenu.classList.toggle('active');
-        });
-
+        // --- AUTHENTICATION ---
         onAuthStateChanged(auth, (user) => {
+            const adminSection = document.getElementById('adminPanelSection');
+            const authContainer = document.getElementById('authContainer');
+            const adminControls = document.getElementById('adminControls');
+
             if(user) {
-                document.getElementById('loginForm').style.display='none';
-                document.getElementById('adminControls').style.display='block';
-                document.getElementById('adminSection').classList.add('active');
+                authContainer.classList.add('hidden');
+                adminControls.classList.remove('hidden');
+                adminSection.classList.add('active');
             } else {
-                document.getElementById('loginForm').style.display='block';
-                document.getElementById('adminControls').style.display='none';
-                document.getElementById('adminSection').classList.remove('active');
+                authContainer.classList.remove('hidden');
+                adminControls.classList.add('hidden');
+                adminSection.classList.remove('active');
             }
         });
 
         document.getElementById('btnLogin').addEventListener('click', async () => {
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPass').value;
             try {
-                await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value);
-                alert("Bienvenido");
-            } catch(e) { alert("Error: " + e.message); }
+                await signInWithEmailAndPassword(auth, email, pass);
+                showNotif("Bienvenido Admin");
+            } catch(e) { showNotif("Error: Credenciales incorrectas", true); }
         });
 
         document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
-        document.getElementById('btnGoPanel').addEventListener('click', () => {
-            document.getElementById('adminSection').scrollIntoView({behavior:'smooth'});
-            sideMenu.classList.remove('active');
-            menuBtn.classList.remove('active');
-        });
 
-        // --- FIRESTORE LOGIC ---
+        // --- FIRESTORE LÓGICA ---
 
         // 1. Guardar Bici Nueva
         document.getElementById('btnSaveBike').addEventListener('click', async () => {
             const client = document.getElementById('newClient').value;
             const model = document.getElementById('newModel').value;
-            if(!client || !model) return alert("Falta nombre o modelo");
+            
+            if(!client || !model) return showNotif("Falta Cliente o Modelo", true);
 
-            const code = 'BICI-' + Math.floor(Math.random()*9000 + 1000);
+            showNotif("Guardando...", false);
+            const code = 'BICI-' + Math.floor(1000 + Math.random() * 9000);
             const photo = fileCache.cover || "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?w=500";
 
-            await addDoc(bikesCol, {
-                client, model, 
-                notes: document.getElementById('newNotes').value,
-                photo,
-                status: 'diagnostico',
-                trackingCode: code,
-                stages: [],
-                createdAt: new Date()
-            });
-
-            alert("Guardada! Código: " + code);
-            // Reset
-            document.getElementById('newClient').value = '';
-            document.getElementById('newModel').value = '';
-            document.getElementById('coverPreview').src = '';
-            document.getElementById('coverUpload').classList.remove('has-file');
-            fileCache.cover = null;
+            try {
+                await addDoc(bikesCol, {
+                    client, model, 
+                    notes: document.getElementById('newNotes').value,
+                    photo,
+                    status: 'diagnostico',
+                    trackingCode: code,
+                    stages: [], // Array vacío para los reportes
+                    createdAt: new Date()
+                });
+                
+                showNotif(`¡Bici Guardada! Código: ${code}`);
+                // Limpiar form
+                document.getElementById('newClient').value = '';
+                document.getElementById('newModel').value = '';
+                document.getElementById('newNotes').value = '';
+                document.getElementById('coverPreview').src = '';
+                document.getElementById('coverUploader').classList.remove('has-file');
+                fileCache.cover = null;
+            } catch(e) { console.error(e); showNotif("Error al guardar", true); }
         });
 
-        // 2. Leer Bicis (Snapshot)
-        onSnapshot(query(bikesCol, orderBy("createdAt", "desc")), (snap) => {
-            const grid = document.getElementById('publicGrid');
-            const select = document.getElementById('bikeSelector');
+        // 2. Leer Datos (Snapshot)
+        onSnapshot(query(bikesCol, orderBy("createdAt", "desc")), (snapshot) => {
+            const grid = document.getElementById('publicBikesGrid');
+            const selector = document.getElementById('bikeSelector');
             
             grid.innerHTML = '';
-            select.innerHTML = '<option value="">Selecciona para editar...</option>';
+            selector.innerHTML = '<option value="">-- Seleccionar Bici --</option>';
             localBikes = [];
 
-            snap.forEach(d => {
-                const bike = {id: d.id, ...d.data()};
+            if(snapshot.empty) {
+                grid.innerHTML = '<p style="width:100%; text-align:center;">No hay bicis en taller.</p>';
+                return;
+            }
+
+            snapshot.forEach(docSnap => {
+                const bike = { id: docSnap.id, ...docSnap.data() };
                 localBikes.push(bike);
 
-                // Option Admin
-                const opt = document.createElement('option');
-                opt.value = bike.id;
-                opt.text = `${bike.model} (${bike.client})`;
-                select.appendChild(opt);
+                // Llenar Selector Admin
+                const option = document.createElement('option');
+                option.value = bike.id;
+                option.textContent = `${bike.model} - ${bike.client} (${bike.status.toUpperCase()})`;
+                selector.appendChild(option);
 
-                // Public Card
-                renderCard(bike, grid);
+                // Renderizar Card Pública
+                renderPublicCard(bike, grid);
             });
         });
 
-        // 3. Renderizado Público
-        function renderCard(bike, container) {
-            const div = document.createElement('div');
-            div.className = 'bike-card';
-            const statusColor = {diagnostico:'#f39c12', reparacion:'#3498db', listo:'#2ecc71', entregado:'#95a5a6'};
-            const statusLabel = {diagnostico:'Diagnóstico', reparacion:'En Reparación', listo:'Lista', entregado:'Entregada'};
+        // 3. Render Card Pública
+        function renderPublicCard(bike, container) {
+            const card = document.createElement('div');
+            card.className = 'bike-card animate-on-scroll';
             
-            div.innerHTML = `
-                <img src="${bike.photo}" class="bike-image">
+            const statusColors = { 
+                diagnostico: '#f39c12', reparacion: '#3498db', listo: '#2ecc71', entregado: '#95a5a6' 
+            };
+            const statusLabel = {
+                diagnostico: 'En Diagnóstico', reparacion: 'En Reparación', listo: 'Lista para Retiro', entregado: 'Entregada'
+            };
+
+            card.innerHTML = `
+                <img src="${bike.photo}" class="bike-cover">
                 <div class="bike-info">
-                    <h3>${bike.model}</h3>
-                    <p>${bike.client}</p>
-                    <span class="status-badge" style="background:${statusColor[bike.status]}">${statusLabel[bike.status]}</span>
+                    <h3 style="font-size:1.2rem; margin-bottom:5px;">${bike.model}</h3>
+                    <p style="color:#7f8c8d; font-size:0.9rem;">${bike.client}</p>
+                    <span style="background:${statusColors[bike.status]}; color:white; padding:5px 12px; border-radius:20px; font-size:0.8rem; font-weight:bold; display:inline-block; margin-top:10px;">
+                        ${statusLabel[bike.status]}
+                    </span>
                 </div>
             `;
-            div.addEventListener('click', () => openExpanded(bike));
-            container.appendChild(div);
+            
+            card.addEventListener('click', () => openModal(bike));
+            container.appendChild(card);
         }
 
-        // 4. Modal Expandido (LOGICA CORE DE FOTOS)
-        function openExpanded(bike) {
+        // 4. MODAL EXPANDIDO (AQUI ESTA LA MAGIA DE LAS FOTOS)
+        function openModal(bike) {
             const modal = document.getElementById('bikeModal');
             const content = document.getElementById('modalContent');
             
-            let html = `
-                <h1 style="color:var(--primary);">${bike.model}</h1>
-                <p style="font-size:1.2rem; color:#666;">Cliente: ${bike.client} | Código: <strong>${bike.trackingCode}</strong></p>
-                <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-                <h3>Bitácora de Trabajo</h3>
-                <div style="margin-top:20px;">
-            `;
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
 
-            if(!bike.stages || bike.stages.length === 0) {
-                html += `<p>No hay avances registrados aún.</p>`;
-            } else {
-                // AQUÍ ESTÁ LA LÓGICA DE VISUALIZACIÓN
+            // Generar HTML de los reportes
+            let stagesHtml = '';
+            if(bike.stages && bike.stages.length > 0) {
                 bike.stages.forEach(stage => {
-                    // TIPO 1: REPORTE DE COMPONENTE (COMPARATIVO)
-                    if(stage.type === 'component_report') {
-                        html += `
+                    // TIPO: REPORTE DE COMPONENTE (COMPARATIVO)
+                    if(stage.type === 'report') {
+                        stagesHtml += `
                             <div class="comparison-container">
-                                <div class="comparison-title">${stage.name}</div>
+                                <div class="comparison-header">
+                                    <span>${stage.name}</span>
+                                    <span class="comparison-date">${stage.date}</span>
+                                </div>
                                 <div class="comparison-grid">
                                     ${stage.photos.before ? `
                                         <div class="comparison-item">
                                             <img src="${stage.photos.before}" onclick="window.open(this.src)">
-                                            <div class="comparison-label">Antes</div>
+                                            <div class="photo-label">Antes</div>
                                         </div>` : ''}
                                     ${stage.photos.clean ? `
                                         <div class="comparison-item">
                                             <img src="${stage.photos.clean}" onclick="window.open(this.src)">
-                                            <div class="comparison-label">Limpio</div>
+                                            <div class="photo-label">Limpio</div>
                                         </div>` : ''}
                                     ${stage.photos.greased ? `
                                         <div class="comparison-item">
                                             <img src="${stage.photos.greased}" onclick="window.open(this.src)">
-                                            <div class="comparison-label">Engrasado</div>
+                                            <div class="photo-label">Engrasado</div>
                                         </div>` : ''}
                                 </div>
                             </div>
                         `;
                     } 
-                    // TIPO 2: FOTO SIMPLE (LEGACY O BICI COMPLETA)
+                    // TIPO: FOTO SIMPLE
                     else {
-                        html += `
+                        stagesHtml += `
                             <div class="comparison-container">
-                                <div class="comparison-title">${stage.name}</div>
-                                <img src="${stage.photo}" style="width:100%; border-radius:8px; cursor:pointer;" onclick="window.open(this.src)">
+                                <div class="comparison-header">
+                                    <span>${stage.name}</span>
+                                    <span class="comparison-date">${stage.date}</span>
+                                </div>
+                                <img src="${stage.photo}" style="width:100%; display:block;" onclick="window.open(this.src)">
                             </div>
                         `;
                     }
                 });
+            } else {
+                stagesHtml = '<p style="text-align:center; color:#95a5a6; padding:20px;">Aún no se han subido avances fotográficos.</p>';
             }
 
-            html += `</div>`;
-            content.innerHTML = html;
-            modal.classList.add('active');
+            content.innerHTML = `
+                <span style="position:absolute; top:15px; right:20px; font-size:2rem; cursor:pointer; color:#333;" onclick="document.getElementById('bikeModal').classList.remove('active'); setTimeout(()=>document.getElementById('bikeModal').style.display='none',300);">&times;</span>
+                
+                <h2 style="color:var(--primary); margin-bottom:5px;">${bike.model}</h2>
+                <p><strong>Cliente:</strong> ${bike.client} | <strong>Código:</strong> ${bike.trackingCode}</p>
+                <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin:15px 0;">
+                    <strong>Informe Inicial:</strong>
+                    <p>${bike.notes}</p>
+                </div>
+                
+                <h3 style="border-bottom:2px solid var(--primary); padding-bottom:10px; margin:30px 0 20px;">Bitácora de Avances</h3>
+                ${stagesHtml}
+            `;
         }
 
-        // 5. Admin Logica (Selectores y Guardado)
+        // Cerrar modal al click fuera
+        document.getElementById('bikeModal').addEventListener('click', (e) => {
+            if(e.target === document.getElementById('bikeModal')) {
+                document.getElementById('bikeModal').classList.remove('active');
+                setTimeout(()=>document.getElementById('bikeModal').style.display='none',300);
+            }
+        });
+
+        // 5. Lógica del Panel Admin (Selector y Guardado)
         document.getElementById('bikeSelector').addEventListener('change', (e) => {
             const id = e.target.value;
+            const editArea = document.getElementById('editArea');
             if(!id) {
-                document.getElementById('editArea').style.display='none';
+                editArea.classList.add('hidden');
+                currentEditingId = null;
                 return;
             }
-            currentEditingId = id;
             const bike = localBikes.find(b => b.id === id);
-            document.getElementById('editingLabel').innerText = bike.model;
-            document.getElementById('editStatus').value = bike.status;
-            document.getElementById('editArea').style.display='block';
+            if(bike) {
+                currentEditingId = id;
+                document.getElementById('editStatus').value = bike.status;
+                editArea.classList.remove('hidden');
+            }
         });
 
         document.getElementById('btnUpdateStatus').addEventListener('click', async () => {
+            if(!currentEditingId) return;
             await updateDoc(doc(db, "bicicletas", currentEditingId), {
                 status: document.getElementById('editStatus').value
             });
-            alert("Estado Actualizado");
+            showNotif("Estado actualizado");
         });
 
-        // GUARDAR REPORTE COMPONENTE (LOGICA INTELIGENTE)
-        document.getElementById('btnSaveComponent').addEventListener('click', async () => {
-            const name = document.getElementById('compName').value;
-            // Verificar que al menos haya 1 foto
-            if(!name) return alert("Ponle nombre al componente");
-            if(!fileCache.before && !fileCache.clean && !fileCache.greased) return alert("Sube al menos una foto");
+        // GUARDAR REPORTE COMPONENTE (Lógica Inteligente)
+        document.getElementById('btnSaveReport').addEventListener('click', async () => {
+            if(!currentEditingId) return;
+            const name = document.getElementById('reportName').value;
+            
+            // Validación: Debe tener nombre y al menos 1 foto
+            if(!name) return showNotif("Ingresa un nombre para el componente", true);
+            if(!fileCache.before && !fileCache.clean && !fileCache.greased) return showNotif("Sube al menos una foto", true);
+
+            showNotif("Subiendo reporte...", false);
 
             const newStage = {
-                type: 'component_report',
+                type: 'report',
                 name: name,
-                date: new Date().toISOString(),
+                date: new Date().toLocaleDateString(),
                 photos: {}
             };
 
-            // Solo agregamos las que existen
+            // Solo guardamos lo que existe (para evitar espacios blancos)
             if(fileCache.before) newStage.photos.before = fileCache.before;
             if(fileCache.clean) newStage.photos.clean = fileCache.clean;
             if(fileCache.greased) newStage.photos.greased = fileCache.greased;
 
-            await updateDoc(doc(db, "bicicletas", currentEditingId), {
-                stages: arrayUnion(newStage)
-            });
-
-            alert("Reporte agregado!");
-            // Limpiar inputs
-            document.getElementById('compName').value = '';
-            ['upBefore','upClean','upGreased'].forEach(id => document.getElementById(id).classList.remove('has-file'));
-            ['prevBefore','prevClean','prevGreased'].forEach(id => document.getElementById(id).src = '');
-            fileCache.before = null; fileCache.clean = null; fileCache.greased = null;
+            try {
+                await updateDoc(doc(db, "bicicletas", currentEditingId), {
+                    stages: arrayUnion(newStage)
+                });
+                showNotif("Reporte Agregado Exitosamente");
+                
+                // Limpiar
+                document.getElementById('reportName').value = '';
+                ['upBefore','upClean','upGreased'].forEach(id => document.getElementById(id).classList.remove('has-file'));
+                ['prevBefore','prevClean','prevGreased'].forEach(id => document.getElementById(id).src = '');
+                fileCache.before = null; fileCache.clean = null; fileCache.greased = null;
+            } catch(e) { console.error(e); showNotif("Error al guardar", true); }
         });
 
         // GUARDAR FOTO SIMPLE
         document.getElementById('btnSaveSimple').addEventListener('click', async () => {
+            if(!currentEditingId) return;
             const name = document.getElementById('simpleName').value;
-            if(!name || !fileCache.simple) return alert("Falta nombre o foto");
+            
+            if(!name || !fileCache.simple) return showNotif("Falta título o foto", true);
 
             const newStage = {
-                type: 'simple', // Tipo simple
+                type: 'simple',
                 name: name,
-                photo: fileCache.simple,
-                date: new Date().toISOString()
+                date: new Date().toLocaleDateString(),
+                photo: fileCache.simple
             };
 
             await updateDoc(doc(db, "bicicletas", currentEditingId), {
                 stages: arrayUnion(newStage)
             });
-
-            alert("Foto agregada!");
+            
+            showNotif("Foto agregada");
             document.getElementById('simpleName').value = '';
             document.getElementById('upSimple').classList.remove('has-file');
-            document.getElementById('prevSimple').src = '';
             fileCache.simple = null;
         });
 
-        // Eliminar
-        document.getElementById('btnDelete').addEventListener('click', async () => {
-            if(confirm("¿Eliminar bici?")) {
+        // BORRAR BICI
+        document.getElementById('btnDeleteBike').addEventListener('click', async () => {
+            if(confirm("¿Estás seguro de eliminar esta bicicleta y todo su historial?")) {
                 await deleteDoc(doc(db, "bicicletas", currentEditingId));
-                document.getElementById('editArea').style.display='none';
+                document.getElementById('editArea').classList.add('hidden');
+                document.getElementById('bikeSelector').value = "";
+                showNotif("Bicicleta eliminada");
             }
         });
 
-        // Busqueda
+        // BUSQUEDA POR CODIGO
         document.getElementById('btnSearch').addEventListener('click', () => {
-            const code = document.getElementById('searchInput').value;
-            const res = document.getElementById('searchResult');
+            const code = document.getElementById('searchCode').value.trim();
             const found = localBikes.find(b => b.trackingCode === code);
-            res.innerHTML = '';
-            if(found) renderCard(found, res);
-            else res.innerHTML = '<p style="text-align:center; color:red;">No encontrado</p>';
+            if(found) {
+                openModal(found);
+            } else {
+                showNotif("Código no encontrado", true);
+            }
         });
+
+        // Notificaciones
+        function showNotif(msg, isError = false) {
+            const notif = document.getElementById('notification');
+            notif.textContent = msg;
+            if(isError) notif.classList.add('error');
+            else notif.classList.remove('error');
+            
+            notif.classList.add('show');
+            setTimeout(() => notif.classList.remove('show'), 3000);
+        }
 
     </script>
 </body>
 </html>
+
+```
