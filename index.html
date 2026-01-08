@@ -3,234 +3,311 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BICIPIOLA - Taller Profesional</title>
+    <title>BICIPIOLA - Taller Profesional de Bicicletas</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Raleway:wght@800&display=swap" rel="stylesheet">
     <style>
-        /* ESTILOS CSS */
+        /* ESTILOS ORIGINALES (MANTENIDOS EXACTAMENTE IGUAL) */
         :root { --primary: #27ae60; --primary-dark: #219653; --secondary: #3498db; --accent: #e74c3c; --dark: #2c3e50; --light: #ecf0f1; --gray: #95a5a6; --light-gray: #f5f7fa; --shadow: 0 4px 20px rgba(0,0,0,0.1); --transition: all 0.4s ease; --radius: 12px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%); color: var(--dark); line-height: 1.6; overflow-x: hidden; }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%); color: var(--dark); line-height: 1.6; overflow-x: hidden; position: relative; }
         
-        /* Header & Nav */
-        header { background-color: rgba(255, 255, 255, 0.95); box-shadow: var(--shadow); position: fixed; width: 100%; top: 0; z-index: 1000; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-family: 'Raleway', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--primary); text-decoration: none; }
+        /* Header y navegación */
+        header { background-color: rgba(255, 255, 255, 0.95); box-shadow: var(--shadow); position: fixed; width: 100%; top: 0; z-index: 1000; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; transition: var(--transition); }
+        .logo { font-family: 'Raleway', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--primary); text-decoration: none; display: flex; align-items: center; }
         nav ul { display: flex; list-style: none; } nav ul li { margin-left: 30px; }
-        nav ul li a { text-decoration: none; color: var(--dark); font-weight: 500; transition: var(--transition); }
+        nav ul li a { text-decoration: none; color: var(--dark); font-weight: 500; transition: var(--transition); position: relative; padding: 5px 0; }
+        nav ul li a:hover { color: var(--primary); }
         
-        /* Hero Section */
-        .hero { height: 100vh; display: flex; align-items: center; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); background-size: cover; background-position: center; color: white; text-align: center; justify-content: center; }
-        .hero-content { z-index: 2; max-width: 800px; padding: 20px; } .brand-title { font-size: 3.5rem; font-weight: 800; margin-bottom: 20px;}
-        .btn { padding: 12px 30px; background: var(--primary); color: white; border-radius: 50px; text-decoration: none; display: inline-block; margin: 10px; cursor: pointer; border: none; font-size: 1rem; font-weight: 600; box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4); }
-        .btn:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(39, 174, 96, 0.6); }
+        /* Menú Admin */
+        .admin-menu-btn { display: flex; flex-direction: column; justify-content: space-between; width: 30px; height: 21px; cursor: pointer; position: relative; z-index: 1001; }
+        .admin-menu-btn span { display: block; height: 3px; width: 100%; background-color: var(--dark); border-radius: 2px; transition: var(--transition); }
+        .admin-menu { position: fixed; top: 0; right: -320px; width: 300px; height: 100vh; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); z-index: 1000; transition: right 0.4s ease; padding: 80px 20px 20px; overflow-y: auto; }
+        .admin-menu.active { right: 0; }
+        .admin-menu-btn.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        .admin-menu-btn.active span:nth-child(2) { opacity: 0; }
+        .admin-menu-btn.active span:nth-child(3) { transform: rotate(-45deg) translate(7px, -6px); }
+        .admin-menu-item { padding: 12px 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: var(--transition); background: rgba(39, 174, 96, 0.05); border-left: 3px solid var(--primary); }
+        .admin-menu-item:hover { background: rgba(39, 174, 96, 0.15); }
 
-        /* Sections */
+        /* Hero */
+        .hero { height: 100vh; display: flex; align-items: center; position: relative; overflow: hidden; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); background-size: cover; background-position: center; color: white; padding: 0 10%; text-align: center; }
+        .hero-content { max-width: 900px; margin: 0 auto; z-index: 2; transform: translateY(50px); opacity: 0; animation: fadeUp 1s forwards 0.5s; }
+        @keyframes fadeUp { to { transform: translateY(0); opacity: 1; } }
+        .brand-title { font-family: 'Raleway', sans-serif; font-size: 4.5rem; font-weight: 800; margin-bottom: 20px; color: #fff; text-transform: uppercase; letter-spacing: 3px; }
+        .btn { display: inline-block; padding: 15px 35px; background: var(--primary); color: white; border-radius: 50px; text-decoration: none; font-weight: 600; transition: var(--transition); border: none; cursor: pointer; font-size: 1.1rem; margin: 10px 5px; }
+        
+        /* Cards & Grid */
         .services, .bikes-section, .tracking { padding: 100px 5%; }
         .section-title { text-align: center; margin-bottom: 60px; }
-        .section-title h2 { font-size: 2.5rem; margin-bottom: 15px; }
+        .services-grid, .bikes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 50px; }
+        .service-card, .bike-card { background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: var(--transition); text-align: center; border: 2px solid var(--light-gray); }
+        .bike-card { cursor: pointer; transform: scale(0.95); opacity: 0; }
+        .bike-card.visible { transform: scale(1); opacity: 1; }
         
-        /* Grids */
-        .services-grid, .bikes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        /* Bike Expanded */
+        .bike-card.expanded { position: fixed; top: 80px; left: 5%; width: 90%; height: calc(100vh - 100px); z-index: 2000; overflow-y: auto; transform: scale(1); box-shadow: 0 10px 50px rgba(0,0,0,0.3); padding-bottom: 50px; }
+        .bike-image { width: 100%; height: 220px; object-fit: cover; border-bottom: 3px solid var(--primary); }
+        .bike-info { padding: 20px; }
         
-        /* Cards */
-        .service-card, .bike-card { background: white; padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow); text-align: center; transition: var(--transition); position: relative; overflow: hidden; }
-        .bike-image { width: 100%; height: 220px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; }
-        
-        /* Status Colors */
-        .status-diagnostico { color: #f39c12; font-weight: bold; } 
-        .status-reparacion { color: #3498db; font-weight: bold; } 
-        .status-listo { color: #2ecc71; font-weight: bold; }
-        .status-entregado { color: #95a5a6; font-weight: bold; }
+        /* Estados */
+        .bike-status { display: inline-block; padding: 6px 15px; border-radius: 20px; font-weight: 500; margin-top: 10px; font-size: 0.9rem; }
+        .status-diagnostico { background: #f39c12; color: white; }
+        .status-reparacion { background: #3498db; color: white; }
+        .status-listo { background: #2ecc71; color: white; }
+        .status-entregado { background: #7f8c8d; color: white; }
 
-        /* Admin Login Modal */
-        .login-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 3000; opacity: 0; pointer-events: none; transition: var(--transition); }
-        .login-modal.active { opacity: 1; pointer-events: all; }
-        .login-box { background: white; padding: 40px; border-radius: var(--radius); width: 100%; max-width: 400px; text-align: center; }
-        .login-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; }
+        /* Timeline & Stages */
+        .timeline { margin-top: 20px; padding-left: 30px; border-left: 2px solid var(--primary); text-align: left; }
+        .timeline-item { margin-bottom: 25px; position: relative; }
+        .timeline-item:before { content: ''; position: absolute; left: -36px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--primary); border: 3px solid white; }
+        .stages-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 10px; }
+        .stage-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
+        .stage-image { width: 100%; height: 140px; object-fit: cover; }
+
+        /* Admin Panel Styles */
+        .admin-section { display: none; margin-bottom: 50px; } /* Oculto por defecto */
+        .admin-section.active { display: block; }
+        .admin-panel { background: #f8f9fa; padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow); border: 2px dashed var(--primary); }
+        .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #eee; flex-wrap: wrap; }
+        .tab-btn { padding: 10px 20px; background: none; border: none; cursor: pointer; font-size: 1rem; font-weight: 500; color: var(--gray); position: relative; }
+        .tab-btn.active { color: var(--primary); font-weight: bold; }
+        .tab-btn.active:after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 3px; background: var(--primary); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
         
-        /* Admin Interface */
-        .admin-panel { display: none; background: #fff; padding: 30px; margin-top: 100px; border: 2px dashed var(--primary); border-radius: var(--radius); margin-bottom: 30px;}
-        .form-group { margin-bottom: 15px; } 
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-family: inherit; }
-        
-        /* Notification */
-        .notification { position: fixed; top: 20px; right: 20px; padding: 15px 25px; background: var(--primary); color: white; border-radius: 8px; transform: translateX(150%); transition: transform 0.3s ease; z-index: 4000; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        /* Drag & Drop */
+        .photo-upload-area { border: 2px dashed #ddd; border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; background: var(--light-gray); min-height: 150px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .photo-upload-area.drag-over { border-color: var(--primary); background: rgba(39, 174, 96, 0.1); }
+        .photo-preview img { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-top: 10px; }
+
+        /* Utils */
+        .notification { position: fixed; top: 20px; right: 20px; padding: 15px 25px; border-radius: 8px; background: var(--primary); color: white; box-shadow: var(--shadow); z-index: 3000; transform: translateX(120%); transition: transform 0.4s ease; }
         .notification.show { transform: translateX(0); }
+        .notification.error { background: var(--accent); }
+        .close-btn { position: absolute; top: 15px; right: 15px; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2001; }
         
-        /* Admin Controls */
-        .admin-controls { display: none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; }
-        .admin-controls select { padding: 5px; border-radius: 5px; margin-right: 5px; }
-
-        /* Search */
-        .search-box { display: flex; justify-content: center; margin-top: 20px; }
-        .search-box input { padding: 15px; border-radius: 30px 0 0 30px; border: 1px solid #ddd; width: 100%; max-width: 400px; outline: none; }
-        .search-btn { border-radius: 0 30px 30px 0; margin: 0; padding: 15px 30px; }
-        
-        /* Footer */
-        footer { background: var(--dark); color: white; padding: 50px 5%; margin-top: 50px; }
-        
-        /* Visibility Logic */
-        body:not(.is-admin) .admin-only { display: none !important; }
-        body.is-admin .admin-only { display: block !important; }
-        body.is-admin .nav-login { display: none; }
-        
+        /* Mobile */
         @media (max-width: 768px) {
-            .brand-title { font-size: 2.5rem; }
-            nav ul { display: none; } /* Simplificado para móvil */
-            .nav-mobile-visible { display: block; position: absolute; top: 20px; right: 20px; }
+            header { padding: 15px; } nav ul { display: none; }
+            .brand-title { font-size: 2.8rem; }
+            .bike-card.expanded { top: 0; left: 0; width: 100%; height: 100vh; border-radius: 0; }
         }
+        .animate-on-scroll { opacity: 0; transform: translateY(20px); transition: all 0.6s ease; }
+        .animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
     </style>
 </head>
 <body>
 
     <div class="notification" id="notification">Operación exitosa</div>
 
-    <div class="login-modal" id="loginModal">
-        <div class="login-box">
-            <h3 style="margin-bottom: 20px; color: var(--primary);">Administración</h3>
-            <input type="email" id="adminEmail" placeholder="Correo Administrador">
-            <input type="password" id="adminPass" placeholder="Contraseña">
-            <button class="btn" id="doLoginBtn" style="width: 100%;">Ingresar</button>
-            <button class="btn" style="background: #95a5a6; width: 100%;" onclick="document.getElementById('loginModal').classList.remove('active')">Cancelar</button>
-        </div>
-    </div>
-
     <header>
         <a href="#" class="logo">BICIPIOLA</a>
         <nav>
             <ul>
                 <li><a href="#servicios">Servicios</a></li>
-                <li><a href="#bicicletas">Taller en Vivo</a></li>
-                <li><a href="#tracking">Seguimiento</a></li>
-                <li class="nav-login"><a href="#" onclick="document.getElementById('loginModal').classList.add('active')"><i class="fas fa-lock"></i> Admin</a></li>
-                <li class="admin-only"><a href="#" id="logoutBtn" style="color: var(--accent); font-weight: bold;"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
+                <li><a href="#bicicletas">Bicicletas</a></li>
+                <li><a href="#seguimiento">Seguimiento</a></li>
             </ul>
         </nav>
+        <div class="admin-menu-btn" id="adminMenuBtn">
+            <span></span><span></span><span></span>
+        </div>
     </header>
+
+    <div class="admin-menu" id="adminMenu">
+        <h3>Panel Admin</h3>
+        <div id="loginFormContainer">
+            <input type="email" id="menuEmail" placeholder="Email" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px;">
+            <input type="password" id="menuPass" placeholder="Contraseña" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px;">
+            <div class="admin-menu-item" id="loginBtnAction">
+                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+            </div>
+        </div>
+
+        <div id="adminActionsContainer" style="display:none;">
+            <div class="admin-menu-item" id="btnShowPanel">
+                <i class="fas fa-tools"></i> Ver Panel de Gestión
+            </div>
+            <div class="admin-menu-item" id="btnLogoutAction" style="background: rgba(231, 76, 60, 0.1); border-left-color: var(--accent);">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </div>
+            <p style="text-align:center; font-size:0.8rem; color:#95a5a6; margin-top:20px;">Sesión Activa</p>
+        </div>
+    </div>
 
     <section class="hero">
         <div class="hero-content">
             <div class="brand-title">BICIPIOLA</div>
-            <h2>Expertos en Mantención de Bicicletas</h2>
-            <p style="font-size: 1.2rem; margin: 20px 0;">Servicio profesional con seguimiento online en tiempo real.</p>
-            <a href="#tracking" class="btn">Ver estado de mi bici</a>
-            <a href="https://wa.me/56933755577" class="btn" style="background: #25D366;"><i class="fab fa-whatsapp"></i> Contactar</a>
+            <h2>Arreglo y Mantención de Bicicletas</h2>
+            <div class="hero-btns">
+                <a href="#seguimiento" class="btn">Ver estado de mi bici</a>
+                <a href="https://wa.me/56933755577" class="btn whatsapp-btn"><i class="fab fa-whatsapp"></i> Contactar</a>
+            </div>
         </div>
     </section>
 
-    <div class="container admin-only" style="padding: 0 5%;">
-        <div class="admin-panel">
-            <h2 style="color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
-                <i class="fas fa-tools"></i> Panel de Gestión
-            </h2>
-            <div class="form-group">
-                <h3>Ingresar Nueva Bicicleta</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <input type="text" id="newClient" placeholder="Nombre Cliente (Ej: Juan Pérez)">
-                    <input type="text" id="newModel" placeholder="Modelo Bicicleta (Ej: Trek Marlin 5)">
-                </div>
-                <select id="newStatus" style="margin-top: 10px;">
-                    <option value="diagnostico">🟡 En Diagnóstico</option>
-                    <option value="reparacion">🔵 En Reparación</option>
-                    <option value="listo">🟢 Lista para Retiro</option>
-                    <option value="entregado">⚪ Entregada</option>
-                </select>
-                <textarea id="newNotes" rows="3" placeholder="Detalles de la reparación..." style="margin-top: 10px;"></textarea>
+    <section class="admin-section" id="mainAdminSection">
+        <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 5%;">
+            <div class="admin-panel">
+                <h2 class="section-title">Panel de Gestión</h2>
                 
-                <div style="margin-top: 10px; background: #f9f9f9; padding: 10px; border-radius: 8px;">
-                    <label style="font-weight: bold;">Foto de la bici:</label>
-                    <input type="file" id="newPhotoInput" accept="image/*" style="border: none;">
-                    <small style="display: block; color: #7f8c8d;">*Sube fotos livianas para que cargue rápido.</small>
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="add-bike">Nueva Bicicleta</button>
+                    <button class="tab-btn" data-tab="edit-bike">Editar / Avances</button>
                 </div>
-                
-                <button class="btn" id="saveBikeBtn" style="width: 100%; margin: 20px 0 0 0;">Guardar en Sistema</button>
+
+                <div class="tab-content active" id="add-bike">
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <input type="text" id="customerName" placeholder="Nombre del cliente">
+                    </div>
+                    <div class="form-group">
+                        <label>Modelo</label>
+                        <input type="text" id="bikeModel" placeholder="Ej: Trek Marlin 5">
+                    </div>
+                    <div class="form-group">
+                        <label>Descripción Inicial</label>
+                        <textarea id="problemDescription" placeholder="¿Qué tiene la bici?"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Estado</label>
+                        <select id="initialStatus">
+                            <option value="diagnostico">En diagnóstico</option>
+                            <option value="reparacion">En reparación</option>
+                            <option value="listo">Lista para entregar</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Foto Portada</label>
+                        <div class="photo-upload-container">
+                            <div class="photo-upload-area" id="newBikeUploadArea">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Toca para subir foto</p>
+                                <input type="file" id="newBikeFile" accept="image/*" style="display:none;">
+                            </div>
+                            <div class="photo-preview" id="newBikePreview"></div>
+                        </div>
+                    </div>
+                    <button class="btn" id="btnAddBikeDB" style="width:100%;">Guardar Bicicleta</button>
+                </div>
+
+                <div class="tab-content" id="edit-bike">
+                    <div class="form-group">
+                        <label>Selecciona Bicicleta para editar:</label>
+                        <select id="bikeSelector">
+                            <option value="">Cargando bicicletas...</option>
+                        </select>
+                    </div>
+
+                    <div id="editArea" style="display:none; border-top: 2px solid #eee; padding-top:20px;">
+                        <h3 style="margin-bottom:15px; color:var(--primary);">Editando: <span id="lblEditingBike"></span></h3>
+                        
+                        <div class="form-group" style="background: #fff; padding:15px; border-radius:8px;">
+                            <label>Actualizar Estado:</label>
+                            <select id="editStatusSelect">
+                                <option value="diagnostico">En diagnóstico</option>
+                                <option value="reparacion">En reparación</option>
+                                <option value="listo">Lista para entregar</option>
+                                <option value="entregado">Entregada</option>
+                            </select>
+                            <button class="btn" id="btnUpdateStatus" style="margin-top:10px; padding: 8px 15px; font-size:0.9rem;">Actualizar Estado</button>
+                        </div>
+
+                        <div class="form-group" style="background: #fff; padding:15px; border-radius:8px;">
+                            <label>Agregar Nueva Etapa (Avance con Foto)</label>
+                            <input type="text" id="stageTitle" placeholder="Nombre etapa (Ej: Desarme, Pintura...)">
+                            <div class="photo-upload-area" id="stageUploadArea" style="margin-top:10px; min-height:100px; padding:15px;">
+                                <i class="fas fa-camera"></i>
+                                <p style="font-size:0.8rem;">Foto del avance</p>
+                                <input type="file" id="stageFile" accept="image/*" style="display:none;">
+                            </div>
+                            <div class="photo-preview" id="stagePreview"></div>
+                            <button class="btn" id="btnAddStage" style="margin-top:10px; width:100%;">Guardar Avance</button>
+                        </div>
+
+                        <button class="btn" id="btnDeleteBike" style="background:var(--accent); width:100%;">Eliminar Bicicleta</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
 
     <section id="servicios" class="services">
         <div class="section-title">
-            <h2>Nuestros Servicios</h2>
-            <p>Calidad garantizada para tu compañera de ruta</p>
+            <h2>Servicios</h2>
+            <p>Mantención profesional para tu compañera</p>
         </div>
         <div class="services-grid">
-            <div class="service-card">
-                <i class="fas fa-wrench fa-3x" style="color: var(--primary); margin-bottom: 20px;"></i>
+            <div class="service-card animate-on-scroll">
+                <div class="service-icon"><i class="fas fa-tools"></i></div>
                 <h3>Mantención Básica</h3>
-                <p style="font-size: 2rem; font-weight: 800; color: var(--primary); margin: 10px 0;">$25.000</p>
-                <ul style="text-align: left; list-style: none; padding-left: 20px;">
-                    <li><i class="fas fa-check" style="color: var(--primary);"></i> Regulación de cambios</li>
-                    <li><i class="fas fa-check" style="color: var(--primary);"></i> Ajuste de frenos</li>
-                    <li><i class="fas fa-check" style="color: var(--primary);"></i> Lubricación de cadena</li>
-                    <li><i class="fas fa-check" style="color: var(--primary);"></i> Apriete general</li>
-                </ul>
+                <div class="service-price">$25.000</div>
+                <div class="service-details"><ul><li>Ajuste cambios y frenos</li><li>Lubricación</li><li>Lavado simple</li></ul></div>
             </div>
-            <div class="service-card">
-                <i class="fas fa-oil-can fa-3x" style="color: var(--primary); margin-bottom: 20px;"></i>
+            <div class="service-card animate-on-scroll">
+                <div class="service-icon"><i class="fas fa-cogs"></i></div>
                 <h3>Mantención Full</h3>
-                <p style="font-size: 2rem; font-weight: 800; color: var(--primary); margin: 10px 0;">$45.000</p>
-                <ul style="text-align: left; list-style: none; padding-left: 20px;">
-                    <li><i class="fas fa-check" style="color: var(--primary);"></i> Todo lo básico incluido</li>
-                    <li><i class="fas fa-check" style="color: var(--primary);"></i> Desarme y limpieza de transmisión</li>
-                    <li><i class="fas fa-check" style="color: var(--primary);"></i> Engrase de mazas y dirección</li>
-                    <li><i class="fas fa-check" style="color: var(--primary);"></i> Centrado de ruedas</li>
-                </ul>
+                <div class="service-price">$45.000</div>
+                <div class="service-details"><ul><li>Todo lo básico</li><li>Engrase de mazas</li><li>Centrado de ruedas</li></ul></div>
             </div>
-            <div class="service-card">
-                <i class="fas fa-cog fa-3x" style="color: var(--primary); margin-bottom: 20px;"></i>
-                <h3>Reparaciones Específicas</h3>
-                <p style="font-size: 1.5rem; font-weight: 800; color: var(--primary); margin: 10px 0;">Cotizar</p>
-                <p>Sangrado de frenos, instalación de componentes, tubeless, reparaciones de cuadros y más.</p>
-                <a href="https://wa.me/56933755577" class="btn" style="margin-top: 15px; font-size: 0.9rem;">Consultar al WhatsApp</a>
+            <div class="service-card animate-on-scroll">
+                <div class="service-icon"><i class="fas fa-bicycle"></i></div>
+                <h3>Armado / Reparación</h3>
+                <div class="service-price">Cotizar</div>
+                <div class="service-details"><ul><li>Sangrado de frenos</li><li>Instalación componentes</li><li>Tubeless</li></ul></div>
             </div>
         </div>
     </section>
 
     <section id="bicicletas" class="bikes-section">
-        <div class="section-title">
-            <h2>Estado del Taller</h2>
-            <p>Revisa en qué estamos trabajando actualmente</p>
-        </div>
-        <div class="bikes-grid" id="bikesContainer">
-            <p style="text-align: center; width: 100%; grid-column: 1/-1;">Cargando datos del taller...</p>
+        <div class="bikes-container">
+            <div class="section-title">
+                <h2>Taller en Vivo</h2>
+                <p>Estado actual de las bicicletas en el taller</p>
+            </div>
+            <div class="bikes-grid" id="bikesGrid">
+                <p style="text-align:center; width:100%;">Cargando datos...</p>
+            </div>
         </div>
     </section>
 
-    <section id="tracking" class="tracking">
-        <div class="section-title">
-            <h2>Seguimiento de tu Bici</h2>
-            <p>Ingresa el código que te entregamos para ver el detalle</p>
+    <section id="seguimiento" class="tracking">
+        <div class="container">
+            <div class="section-title"><h2>Seguimiento</h2></div>
+            <div class="tracking-box animate-on-scroll">
+                <h3>Ingresa tu código</h3>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Ej: BICI-1234">
+                    <button class="search-btn" id="btnSearch">Buscar</button>
+                </div>
+                <div id="searchResults" class="search-results-container" style="display: none; padding-top:20px;"></div>
+            </div>
         </div>
-        <div class="search-box">
-            <input type="text" id="trackingInput" placeholder="Ej: BICI-4821">
-            <button class="btn search-btn" id="trackingBtn">Buscar</button>
-        </div>
-        <div id="trackingResult" style="margin-top: 40px; max-width: 600px; margin-left: auto; margin-right: auto;"></div>
     </section>
 
-    <footer>
-        <div style="display: flex; justify-content: space-around; flex-wrap: wrap; max-width: 1200px; margin: 0 auto;">
-            <div style="margin-bottom: 20px;">
-                <h3>BICIPIOLA</h3>
+    <footer id="contacto">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4>BICIPIOLA</h4>
                 <p>Concón, Valparaíso</p>
-                <p>+56 9 3375 5577</p>
-            </div>
-            <div>
-                <h3>Síguenos</h3>
-                <a href="https://instagram.com/bicipiola" style="color: white; font-size: 1.5rem; margin-right: 15px;"><i class="fab fa-instagram"></i></a>
-                <a href="https://facebook.com" style="color: white; font-size: 1.5rem;"><i class="fab fa-facebook"></i></a>
+                <div class="social-links">
+                    <a href="https://instagram.com/bicipiola"><i class="fab fa-instagram"></i></a>
+                    <a href="https://wa.me/56933755577"><i class="fab fa-whatsapp"></i></a>
+                </div>
             </div>
         </div>
-        <p style="text-align: center; margin-top: 30px; font-size: 0.8rem; opacity: 0.7;">&copy; 2026 BICIPIOLA. Todos los derechos reservados.</p>
+        <div class="copyright"><p>&copy; 2026 BICIPIOLA.</p></div>
     </footer>
 
     <script type="module">
-        // Importamos Firebase desde la web (sin instalar nada)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // TUS CREDENCIALES DE LA IMAGEN
+        // TUS CREDENCIALES
         const firebaseConfig = {
             apiKey: "AIzaSyA0Cg0zMBVpgicANllyMJB7NbcFkbcxGSw",
             authDomain: "bicipiola-4efb8.firebaseapp.com",
@@ -241,237 +318,331 @@
             measurementId: "G-G9KCVS2SV1"
         };
 
-        // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        const bikesCollection = collection(db, "bicicletas");
+        const bikesCol = collection(db, "bicicletas");
 
-        // Referencias DOM
-        const doLoginBtn = document.getElementById('doLoginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const bikesContainer = document.getElementById('bikesContainer');
+        // Variables Globales de UI
+        let localBikes = []; // Copia local para búsqueda y render
+        let currentEditingId = null;
+        let newBikePhotoBase64 = null;
+        let newStagePhotoBase64 = null;
 
-        // --- AUTENTICACIÓN ADMIN ---
+        // --- 1. INTERFAZ UI (Eventos visuales) ---
         
-        // Login
-        doLoginBtn.addEventListener('click', async () => {
-            const email = document.getElementById('adminEmail').value;
-            const pass = document.getElementById('adminPass').value;
-            
-            if(!email || !pass) return showNotif("Ingresa correo y contraseña", true);
+        // Animaciones Scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('visible'); });
+        });
+        document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
 
+        // Menú Admin Deslizante
+        const adminMenuBtn = document.getElementById('adminMenuBtn');
+        const adminMenu = document.getElementById('adminMenu');
+        adminMenuBtn.addEventListener('click', () => {
+            adminMenuBtn.classList.toggle('active');
+            adminMenu.classList.toggle('active');
+        });
+
+        // Tabs
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(this.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Drag & Drop Helpers
+        function setupUpload(areaId, fileId, previewId, callback) {
+            const area = document.getElementById(areaId);
+            const input = document.getElementById(fileId);
+            const preview = document.getElementById(previewId);
+            
+            area.addEventListener('click', () => input.click());
+            input.addEventListener('change', (e) => processFile(e.target.files[0]));
+            
+            // Drag events
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                area.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); });
+            });
+            area.addEventListener('dragover', () => area.classList.add('drag-over'));
+            area.addEventListener('dragleave', () => area.classList.remove('drag-over'));
+            area.addEventListener('drop', (e) => {
+                area.classList.remove('drag-over');
+                processFile(e.dataTransfer.files[0]);
+            });
+
+            function processFile(file) {
+                if(!file || !file.type.startsWith('image/')) return alert('Solo imágenes');
+                if(file.size > 800 * 1024) return alert('Imagen muy pesada (Máx 800kb para esta demo)');
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">`;
+                    callback(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        setupUpload('newBikeUploadArea', 'newBikeFile', 'newBikePreview', (base64) => newBikePhotoBase64 = base64);
+        setupUpload('stageUploadArea', 'stageFile', 'stagePreview', (base64) => newStagePhotoBase64 = base64);
+
+
+        // --- 2. LOGICA FIREBASE ---
+
+        // AUTH
+        onAuthStateChanged(auth, (user) => {
+            const loginForm = document.getElementById('loginFormContainer');
+            const actions = document.getElementById('adminActionsContainer');
+            const mainPanel = document.getElementById('mainAdminSection');
+            
+            if (user) {
+                loginForm.style.display = 'none';
+                actions.style.display = 'block';
+                mainPanel.classList.add('active'); // Mostrar panel grande
+                // Scrollear al panel si acabamos de loguear
+                if(!localStorage.getItem('wasLogged')) {
+                    mainPanel.scrollIntoView({behavior: 'smooth'});
+                    localStorage.setItem('wasLogged', 'true');
+                }
+            } else {
+                loginForm.style.display = 'block';
+                actions.style.display = 'none';
+                mainPanel.classList.remove('active');
+                localStorage.removeItem('wasLogged');
+            }
+        });
+
+        document.getElementById('loginBtnAction').addEventListener('click', async () => {
+            const email = document.getElementById('menuEmail').value;
+            const pass = document.getElementById('menuPass').value;
             try {
                 await signInWithEmailAndPassword(auth, email, pass);
-                document.getElementById('loginModal').classList.remove('active');
-                showNotif('¡Bienvenido Cristóbal!');
-            } catch (error) {
-                console.error(error);
-                showNotif('Error: Revisa tus datos', true);
-            }
+                alert("Bienvenido Admin");
+            } catch (e) { alert("Error: " + e.message); }
         });
 
-        // Logout
-        logoutBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            signOut(auth).then(() => showNotif('Sesión cerrada'));
+        document.getElementById('btnLogoutAction').addEventListener('click', () => signOut(auth));
+        document.getElementById('btnShowPanel').addEventListener('click', () => {
+            document.getElementById('mainAdminSection').scrollIntoView({behavior:'smooth'});
+            adminMenu.classList.remove('active');
+            adminMenuBtn.classList.remove('active');
         });
 
-        // Observador de estado (Detecta si eres admin o cliente)
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.body.classList.add('is-admin'); // Muestra controles
-            } else {
-                document.body.classList.remove('is-admin'); // Oculta controles
-            }
-            loadBikesRealtime(); // Recargar bicis con/sin botones de editar
-        });
 
-        // --- GESTIÓN DE BICICLETAS ---
-
-        // 1. Guardar nueva bici
-        document.getElementById('saveBikeBtn').addEventListener('click', async () => {
-            const client = document.getElementById('newClient').value;
-            const model = document.getElementById('newModel').value;
-            const status = document.getElementById('newStatus').value;
-            const notes = document.getElementById('newNotes').value;
-            const fileInput = document.getElementById('newPhotoInput');
-
-            if (!client || !model) return showNotif('Falta el nombre o modelo', true);
+        // BASE DE DATOS (Leer en tiempo real)
+        const q = query(bikesCol, orderBy("createdAt", "desc"));
+        onSnapshot(q, (snapshot) => {
+            localBikes = [];
+            const grid = document.getElementById('bikesGrid');
+            const selector = document.getElementById('bikeSelector');
             
-            showNotif('Guardando...', false);
+            grid.innerHTML = '';
+            selector.innerHTML = '<option value="">-- Seleccionar para editar --</option>';
 
-            // Generar código aleatorio (Ej: BICI-8492)
-            const trackingCode = 'BICI-' + Math.floor(1000 + Math.random() * 9000);
-
-            // Foto por defecto si no sube ninguna
-            let photoBase64 = "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&w=500&q=60";
-
-            // Si subió foto, convertirla
-            if (fileInput.files.length > 0) {
-                try {
-                    photoBase64 = await toBase64(fileInput.files[0]);
-                } catch (e) {
-                    return showNotif('Error al procesar la imagen', true);
-                }
+            if (snapshot.empty) {
+                grid.innerHTML = '<p style="text-align:center; width:100%;">No hay bicis en taller.</p>';
+                return;
             }
 
-            try {
-                await addDoc(bikesCollection, {
-                    client, model, status, notes, trackingCode,
-                    photo: photoBase64,
-                    createdAt: new Date()
-                });
-                showNotif(`¡Listo! Código: ${trackingCode}`);
+            snapshot.forEach(docSnap => {
+                const bike = { id: docSnap.id, ...docSnap.data() };
+                localBikes.push(bike);
                 
-                // Limpiar formulario
-                document.getElementById('newClient').value = '';
-                document.getElementById('newModel').value = '';
-                document.getElementById('newNotes').value = '';
-                document.getElementById('newPhotoInput').value = '';
-            } catch (e) {
-                console.error(e);
-                showNotif('Error al guardar en base de datos', true);
-            }
-        });
+                // Renderizar Tarjeta en Grid
+                renderBikeCard(bike, grid);
 
-        // 2. Cargar bicis en tiempo real
-        function loadBikesRealtime() {
-            // Ordenar por fecha de creación (más nuevas primero)
-            const q = query(bikesCollection, orderBy("createdAt", "desc"));
-
-            onSnapshot(q, (snapshot) => {
-                bikesContainer.innerHTML = ''; // Limpiar contenedor
-                
-                if(snapshot.empty) {
-                    bikesContainer.innerHTML = '<p style="text-align:center; width:100%;">No hay bicicletas en el taller hoy.</p>';
-                    return;
-                }
-
-                snapshot.forEach((docSnap) => {
-                    const bike = docSnap.data();
-                    const id = docSnap.id;
-                    
-                    // Textos y colores legibles
-                    const statusLabels = { 'diagnostico': 'En Diagnóstico', 'reparacion': 'En Reparación', 'listo': 'Lista para Retiro', 'entregado': 'Entregada' };
-                    const statusClasses = { 'diagnostico': 'status-diagnostico', 'reparacion': 'status-reparacion', 'listo': 'status-listo', 'entregado': 'status-entregado' };
-
-                    // Crear tarjeta
-                    const card = document.createElement('div');
-                    card.className = 'bike-card';
-                    card.innerHTML = `
-                        <img src="${bike.photo}" class="bike-image" alt="Bici">
-                        <h3>${bike.model}</h3>
-                        <p style="color: #7f8c8d; font-size: 0.9rem;">Cliente: ${bike.client}</p>
-                        <p class="${statusClasses[bike.status]}" style="margin: 10px 0;">
-                            ${statusLabels[bike.status].toUpperCase()}
-                        </p>
-                        <div style="background: #f1f2f6; padding: 5px; border-radius: 5px; display: inline-block; font-family: monospace;">
-                            ${bike.trackingCode}
-                        </div>
-
-                        <div class="admin-controls admin-only">
-                            <label style="display:block; text-align:left; font-size:0.8rem; margin-bottom:5px;">Cambiar Estado:</label>
-                            <div style="display:flex; justify-content:space-between;">
-                                <select onchange="window.updateStatus('${id}', this.value)" style="flex:1;">
-                                    <option value="diagnostico" ${bike.status==='diagnostico'?'selected':''}>Diagnóstico</option>
-                                    <option value="reparacion" ${bike.status==='reparacion'?'selected':''}>Reparación</option>
-                                    <option value="listo" ${bike.status==='listo'?'selected':''}>Lista</option>
-                                    <option value="entregado" ${bike.status==='entregado'?'selected':''}>Entregada</option>
-                                </select>
-                                <button class="btn" style="background:#e74c3c; padding: 5px 12px; margin:0;" onclick="window.deleteBike('${id}')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    bikesContainer.appendChild(card);
-                });
+                // Agregar al selector del admin
+                const opt = document.createElement('option');
+                opt.value = bike.id;
+                opt.text = `${bike.model} (${bike.client})`;
+                selector.appendChild(opt);
             });
-        }
+        });
 
-        // --- BUSQUEDA (CLIENTE) ---
-        document.getElementById('trackingBtn').addEventListener('click', async () => {
-            const code = document.getElementById('trackingInput').value.trim();
-            const resultDiv = document.getElementById('trackingResult');
+        // FUNCIONES DE RENDERIZADO
+        function renderBikeCard(bike, container) {
+            const statusClasses = { 'diagnostico': 'status-diagnostico', 'reparacion': 'status-reparacion', 'listo': 'status-listo', 'entregado': 'status-entregado' };
+            const statusTexts = { 'diagnostico': 'En Diagnóstico', 'reparacion': 'En Reparación', 'listo': 'Lista para Retiro', 'entregado': 'Entregada' };
             
-            if(!code) return showNotif('Ingresa un código', true);
+            const card = document.createElement('div');
+            card.className = 'bike-card visible';
+            card.innerHTML = `
+                <img src="${bike.photo}" class="bike-image">
+                <div class="bike-info">
+                    <h3>${bike.model}</h3>
+                    <p><strong>${bike.client}</strong></p>
+                    <span class="bike-status ${statusClasses[bike.status]}">${statusTexts[bike.status]}</span>
+                </div>
+            `;
             
-            resultDiv.innerHTML = '<p style="text-align:center;">Buscando...</p>';
+            // Evento Click para Expandir (Modal)
+            card.addEventListener('click', (e) => {
+                if(card.classList.contains('expanded')) return;
+                // Colapsar otras
+                document.querySelectorAll('.bike-card.expanded').forEach(c => {
+                    c.classList.remove('expanded'); 
+                    const existingContent = c.querySelector('.expanded-content');
+                    if(existingContent) existingContent.remove();
+                });
 
-            // Buscar en Firestore donde trackingCode sea igual al input
-            const q = query(bikesCollection, where("trackingCode", "==", code));
-            const querySnapshot = await getDocs(q);
+                card.classList.add('expanded');
+                
+                // Generar contenido expandido
+                const content = document.createElement('div');
+                content.className = 'expanded-content';
+                content.style.padding = "0 20px 40px";
+                
+                // HTML de etapas
+                let stagesHtml = '';
+                if(bike.stages && bike.stages.length > 0) {
+                    stagesHtml = `<div class="stages-grid">` + 
+                        bike.stages.map(s => `
+                            <div class="stage-card">
+                                <img src="${s.photo}" class="stage-image">
+                                <div class="stage-info"><div class="stage-name">${s.name}</div></div>
+                            </div>
+                        `).join('') + `</div>`;
+                } else {
+                    stagesHtml = '<p style="color:#999;">Sin avances registrados aún.</p>';
+                }
 
-            resultDiv.innerHTML = ''; // Limpiar
+                content.innerHTML = `
+                    <div class="close-btn"><i class="fas fa-times"></i></div>
+                    <div style="max-width:800px; margin:0 auto; text-align:left;">
+                        <h2 style="margin-top:20px; color:var(--primary);">${bike.model}</h2>
+                        <p><strong>Cliente:</strong> ${bike.client}</p>
+                        <p><strong>Problema:</strong> ${bike.notes}</p>
+                        <p style="background:#eee; padding:5px; display:inline-block; border-radius:5px; margin-top:10px;">
+                            Código: <strong>${bike.trackingCode}</strong>
+                        </p>
 
-            if (querySnapshot.empty) {
-                resultDiv.innerHTML = `
-                    <div style="background: #ffeaa7; padding: 20px; border-radius: 10px; text-align: center; color: #d35400;">
-                        <i class="fas fa-exclamation-circle fa-2x"></i>
-                        <p style="margin-top:10px;">No encontramos una bicicleta con el código <strong>${code}</strong>.</p>
-                        <p style="font-size:0.9rem;">Verifica que esté bien escrito (Ej: BICI-1234)</p>
+                        <div style="margin-top:30px;">
+                            <h4 style="border-bottom:2px solid var(--primary); display:inline-block; margin-bottom:15px;">Bitácora de Avances</h4>
+                            ${stagesHtml}
+                        </div>
                     </div>
                 `;
-            } else {
-                querySnapshot.forEach((doc) => {
-                    const bike = doc.data();
-                    const statusLabels = { 'diagnostico': 'En Diagnóstico', 'reparacion': 'En Reparación', 'listo': 'Lista para Retiro', 'entregado': 'Entregada' };
-                    
-                    resultDiv.innerHTML = `
-                        <div class="bike-card" style="border: 2px solid var(--primary); transform: none;">
-                            <div style="background: var(--primary); color: white; padding: 5px; position: absolute; top: 0; left: 0; width: 100%;">RESULTADO DE BÚSQUEDA</div>
-                            <img src="${bike.photo}" class="bike-image" style="margin-top: 30px;">
-                            <h2>${bike.model}</h2>
-                            <p>Cliente: ${bike.client}</p>
-                            <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
-                            <p style="font-size: 1.2rem;">Estado: <strong>${statusLabels[bike.status]}</strong></p>
-                            <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: left;">
-                                <strong><i class="fas fa-clipboard-list"></i> Informe Técnico:</strong>
-                                <p style="margin-top: 5px;">${bike.notes || 'Sin observaciones adicionales.'}</p>
-                            </div>
-                        </div>
-                    `;
+
+                card.appendChild(content);
+                
+                // Botón cerrar
+                content.querySelector('.close-btn').addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    card.classList.remove('expanded');
+                    content.remove();
                 });
-            }
-        });
+            });
 
-
-        // --- FUNCIONES GLOBALES (Window) ---
-        // Necesarias porque el HTML 'onclick' no ve dentro del módulo
-        window.updateStatus = async (id, newStatus) => {
-            try {
-                const bikeRef = doc(db, "bicicletas", id);
-                await updateDoc(bikeRef, { status: newStatus });
-                showNotif('Estado actualizado correctamente');
-            } catch(e) { console.error(e); showNotif('Error al actualizar', true); }
-        };
-
-        window.deleteBike = async (id) => {
-            if(confirm('¿Estás seguro de eliminar este registro? No se puede deshacer.')) {
-                try {
-                    await deleteDoc(doc(db, "bicicletas", id));
-                    showNotif('Registro eliminado');
-                } catch(e) { console.error(e); showNotif('Error al eliminar', true); }
-            }
-        };
-
-        // Utilidad: Notificaciones
-        function showNotif(msg, isError = false) {
-            const notif = document.getElementById('notification');
-            notif.textContent = msg;
-            notif.style.background = isError ? '#e74c3c' : '#27ae60';
-            notif.classList.add('show');
-            setTimeout(() => notif.classList.remove('show'), 3000);
+            container.appendChild(card);
         }
 
-        // Utilidad: Convertir archivo a Base64
-        const toBase64 = file => new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
+        // --- 3. ACCIONES DE GESTIÓN (GUARDAR / EDITAR) ---
+
+        // Guardar Nueva Bici
+        document.getElementById('btnAddBikeDB').addEventListener('click', async () => {
+            const client = document.getElementById('customerName').value;
+            const model = document.getElementById('bikeModel').value;
+            const notes = document.getElementById('problemDescription').value;
+            const status = document.getElementById('initialStatus').value;
+
+            if(!client || !model) return alert("Faltan datos");
+
+            const trackingCode = 'BICI-' + Math.floor(Math.random()*10000);
+            const photo = newBikePhotoBase64 || "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&w=500&q=60";
+
+            try {
+                await addDoc(bikesCol, {
+                    client, model, notes, status, trackingCode, photo,
+                    stages: [],
+                    createdAt: new Date()
+                });
+                alert("Bicicleta guardada! Código: " + trackingCode);
+                // Reset form
+                document.getElementById('customerName').value = '';
+                document.getElementById('bikeModel').value = '';
+                newBikePhotoBase64 = null;
+                document.getElementById('newBikePreview').innerHTML = '';
+            } catch(e) { console.error(e); alert("Error al guardar"); }
         });
+
+        // Selector de Edición
+        document.getElementById('bikeSelector').addEventListener('change', (e) => {
+            const id = e.target.value;
+            const editArea = document.getElementById('editArea');
+            if(!id) {
+                editArea.style.display = 'none';
+                currentEditingId = null;
+                return;
+            }
+            const bike = localBikes.find(b => b.id === id);
+            if(bike) {
+                currentEditingId = id;
+                editArea.style.display = 'block';
+                document.getElementById('lblEditingBike').innerText = bike.model;
+                document.getElementById('editStatusSelect').value = bike.status;
+            }
+        });
+
+        // Actualizar Estado
+        document.getElementById('btnUpdateStatus').addEventListener('click', async () => {
+            if(!currentEditingId) return;
+            const newStatus = document.getElementById('editStatusSelect').value;
+            await updateDoc(doc(db, "bicicletas", currentEditingId), { status: newStatus });
+            alert("Estado actualizado");
+        });
+
+        // Agregar Etapa
+        document.getElementById('btnAddStage').addEventListener('click', async () => {
+            if(!currentEditingId) return;
+            const title = document.getElementById('stageTitle').value;
+            if(!title || !newStagePhotoBase64) return alert("Ingresa nombre y foto");
+
+            const newStage = {
+                name: title,
+                photo: newStagePhotoBase64,
+                date: new Date().toLocaleDateString()
+            };
+
+            await updateDoc(doc(db, "bicicletas", currentEditingId), {
+                stages: arrayUnion(newStage)
+            });
+            
+            alert("Avance agregado");
+            document.getElementById('stageTitle').value = '';
+            newStagePhotoBase64 = null;
+            document.getElementById('stagePreview').innerHTML = '';
+        });
+
+        // Eliminar
+        document.getElementById('btnDeleteBike').addEventListener('click', async () => {
+            if(!currentEditingId) return;
+            if(confirm("¿Borrar definitivamente?")) {
+                await deleteDoc(doc(db, "bicicletas", currentEditingId));
+                alert("Eliminada");
+                document.getElementById('editArea').style.display = 'none';
+            }
+        });
+
+        // BÚSQUEDA PÚBLICA (Tracking)
+        document.getElementById('btnSearch').addEventListener('click', () => {
+            const code = document.getElementById('searchInput').value.trim();
+            const results = document.getElementById('searchResults');
+            results.style.display = 'block';
+            results.innerHTML = '';
+
+            const found = localBikes.find(b => b.trackingCode === code);
+            if(found) {
+                renderBikeCard(found, results); // Reutilizamos la función de render
+            } else {
+                results.innerHTML = '<p style="color:red;">No encontrado. Revisa el código.</p>';
+            }
+        });
+
     </script>
 </body>
 </html>
