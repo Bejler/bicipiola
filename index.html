@@ -232,9 +232,9 @@
                                 <p style="font-size:0.8rem; color:#7f8c8d; margin-bottom:10px;">Sube 1, 2 o las 3 fotos (Antes / Limpio / Engrasado). El sistema acomoda el diseño.</p>
                                 <input type="text" id="reportName" placeholder="Nombre (Ej: Transmisión, Motor, Limpieza)">
                                 <div class="upload-grid-3">
-                                    <div class="mini-uploader" id="upBefore"><span>Antes</span><img id="prevBefore"><input type="file" id="fileBefore" hidden></div>
-                                    <div class="mini-uploader" id="upClean"><span>Limpio</span><img id="prevClean"><input type="file" id="fileClean" hidden></div>
-                                    <div class="mini-uploader" id="upGreased"><span>Engrasado</span><img id="prevGreased"><input type="file" id="fileGreased" hidden></div>
+                                    <div class="mini-uploader" id="upBefore"><span>Antes</span><img id="prevBefore"><input type="file" id="fileBefore" hidden accept="image/*"></div>
+                                    <div class="mini-uploader" id="upClean"><span>Limpio</span><img id="prevClean"><input type="file" id="fileClean" hidden accept="image/*"></div>
+                                    <div class="mini-uploader" id="upGreased"><span>Engrasado</span><img id="prevGreased"><input type="file" id="fileGreased" hidden accept="image/*"></div>
                                 </div>
                                 <button class="btn" id="btnSaveReport" style="width:100%; margin-top:15px;">Subir Reporte</button>
                             </div>
@@ -694,6 +694,7 @@
 
         // --- SUBIR REPORTE (3 Fotos) ---
         document.getElementById('btnSaveReport').onclick = async () => {
+            if(!currentEditingId) return;
             const name = document.getElementById('reportName').value;
             if(!name) return showNotif('Falta nombre reporte', true);
             if(!fileCache.before && !fileCache.clean && !fileCache.greased) return showNotif('Sube al menos 1 foto', true);
@@ -723,6 +724,7 @@
 
         // --- SUBIR FOTO SIMPLE (1 Foto) ---
         document.getElementById('btnSaveSimple').onclick = async () => {
+            if(!currentEditingId) return;
             const name = document.getElementById('simpleName').value;
             if(!name) return showNotif('Falta título', true);
             if(!fileCache.simple) return showNotif('Sube la foto', true);
