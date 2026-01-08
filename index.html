@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Taller de Bicicletas profesional. Seguimiento en línea, mantenciones y reparaciones.">
+    <meta name="description" content="Taller de Bicicletas profesional. Seguimiento en línea.">
     <title>BICIPIOLA - Taller de Bicicletas</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Raleway:wght@800&display=swap" rel="stylesheet">
@@ -228,7 +228,8 @@
                             </div>
 
                             <div style="background:#fdfefe; border:2px dashed #bdc3c7; border-radius:12px; padding:20px; margin-top:20px;">
-                                <h4 style="margin-bottom:10px;"><i class="fas fa-camera-retro"></i> Agregar Avance / Reporte</h4>
+                                <h4 style="margin-bottom:10px; color:#2c3e50;"><i class="fas fa-camera-retro"></i> Agregar Reporte Comparativo</h4>
+                                <p style="font-size:0.8rem; color:#7f8c8d; margin-bottom:10px;">Sube 1, 2 o las 3 fotos (Antes / Limpio / Engrasado). El sistema acomoda el diseño.</p>
                                 <input type="text" id="reportName" placeholder="Nombre (Ej: Transmisión, Motor, Limpieza)">
                                 <div class="upload-grid-3">
                                     <div class="mini-uploader" id="upBefore"><span>Antes</span><img id="prevBefore"><input type="file" id="fileBefore" hidden></div>
@@ -236,6 +237,18 @@
                                     <div class="mini-uploader" id="upGreased"><span>Engrasado</span><img id="prevGreased"><input type="file" id="fileGreased" hidden></div>
                                 </div>
                                 <button class="btn" id="btnSaveReport" style="width:100%; margin-top:15px;">Subir Reporte</button>
+                            </div>
+
+                            <div style="background:#fafafa; border-radius:12px; padding:20px; margin-top:20px; border:1px solid #eee;">
+                                <h4 style="margin-bottom:10px; color:#2c3e50;"><i class="fas fa-image"></i> Agregar Foto Simple</h4>
+                                <p style="font-size:0.8rem; color:#7f8c8d; margin-bottom:10px;">Para fotos de proceso único o bici terminada.</p>
+                                <input type="text" id="simpleName" placeholder="Título (Ej: Bici Terminada, Detalle Freno)">
+                                <div class="mini-uploader" id="upSimple" style="height:120px; margin-top:10px;">
+                                    <i class="fas fa-camera"></i><p>Foto Única</p>
+                                    <img id="prevSimple">
+                                    <input type="file" id="fileSimple" hidden accept="image/*">
+                                </div>
+                                <button class="btn" id="btnSaveSimple" style="width:100%; margin-top:15px; background:var(--secondary);">Subir Foto Simple</button>
                             </div>
 
                             <button class="btn" id="btnDeleteBike" style="background:var(--accent); width:100%; margin-top:30px;">Eliminar Bicicleta</button>
@@ -302,7 +315,24 @@
                 <p>Mantención profesional garantizada</p>
             </div>
             <div class="services-grid" id="publicServicesGrid">
-                <p style="text-align:center; width:100%;">Cargando servicios...</p>
+                <div class="service-card animate-on-scroll">
+                    <div class="service-icon"><i class="fas fa-tools"></i></div>
+                    <h3>Mantención Básica</h3>
+                    <div class="service-price">$25.000</div>
+                    <div class="service-details"><ul><li>Ajuste y lubricación transmisión</li><li>Ajuste de frenos</li><li>Limpieza exterior</li></ul></div>
+                </div>
+                <div class="service-card animate-on-scroll">
+                    <div class="service-icon"><i class="fas fa-cogs"></i></div>
+                    <h3>Mantención General</h3>
+                    <div class="service-price">$30.000</div>
+                    <div class="service-details"><ul><li>Mantención básica completa</li><li>Engrasado completo</li><li>Cambio de piolas</li></ul></div>
+                </div>
+                <div class="service-card animate-on-scroll">
+                    <div class="service-icon"><i class="fas fa-bicycle"></i></div>
+                    <h3>Ajuste de Cambios</h3>
+                    <div class="service-price">$10.000</div>
+                    <div class="service-details"><ul><li>Ajuste preciso</li><li>Lubricación de cables</li><li>Verificación desgaste</li></ul></div>
+                </div>
             </div>
         </div>
     </section>
@@ -343,7 +373,7 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-        // --- CREDENCIALES ---
+        // --- TUS CREDENCIALES ---
         const firebaseConfig = {
             apiKey: "AIzaSyA0Cg0zMBVpgicANllyMJB7NbcFkbcxGSw",
             authDomain: "bicipiola-4efb8.firebaseapp.com",
@@ -362,7 +392,7 @@
         // Estado Local
         let localBikes = [];
         let currentEditingId = null;
-        let fileCache = { cover:null, before:null, clean:null, greased:null }; // Guarda File objects
+        let fileCache = { cover:null, before:null, clean:null, greased:null, simple:null };
 
         // --- UI UTILS ---
         window.openTab = (id) => {
@@ -385,18 +415,15 @@
             setTimeout(() => n.classList.remove('show'), 3000);
         }
 
-        // Scroll animation
         const observer = new IntersectionObserver(entries => entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }));
         document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
 
-        // Menú Toggle
         document.getElementById('menuBtn').onclick = () => {
             document.getElementById('menuBtn').classList.toggle('active');
             document.getElementById('sideMenu').classList.toggle('active');
         };
 
-        // --- CORE: STORAGE & IMAGENES (COMPRESION) ---
-        
+        // --- CORE: STORAGE ---
         async function compressImage(file) {
             return new Promise((resolve, reject) => {
                 const img = new Image();
@@ -404,7 +431,7 @@
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    const maxWidth = 1200; // Ancho máximo
+                    const maxWidth = 1200; 
                     const scale = Math.min(1, maxWidth / img.width);
                     canvas.width = img.width * scale;
                     canvas.height = img.height * scale;
@@ -438,7 +465,7 @@
                     img.src = URL.createObjectURL(file);
                     img.style.display = 'block';
                     div.classList.add('has-file');
-                    fileCache[key] = file; // Guardar el archivo real
+                    fileCache[key] = file;
                 }
             };
         }
@@ -447,6 +474,7 @@
         setupUploader('upBefore', 'fileBefore', 'prevBefore', 'before');
         setupUploader('upClean', 'fileClean', 'prevClean', 'clean');
         setupUploader('upGreased', 'fileGreased', 'prevGreased', 'greased');
+        setupUploader('upSimple', 'fileSimple', 'prevSimple', 'simple');
 
         // --- AUTH ---
         onAuthStateChanged(auth, user => {
@@ -470,23 +498,18 @@
         };
         document.getElementById('btnLogout').onclick = () => signOut(auth);
 
-        // --- 1. SETTINGS & SITE CONFIG ---
+        // --- 1. SETTINGS ---
         const settingsRef = doc(db, 'settings', 'site');
-        
-        // Cargar Configuración
         onSnapshot(settingsRef, (doc) => {
             if(doc.exists()) {
                 const data = doc.data();
-                // Actualizar UI
                 document.getElementById('heroTitleDisplay').textContent = data.heroTitle || 'BICIPIOLA';
                 document.getElementById('heroSubtitleDisplay').textContent = data.heroSubtitle || 'Taller de Bicicletas';
                 if(data.whatsapp) document.getElementById('heroWhatsappBtn').href = `https://wa.me/${data.whatsapp}`;
-                
                 const tallerSec = document.getElementById('taller');
                 if(data.showTallerLive === false) tallerSec.classList.add('hidden');
                 else tallerSec.classList.remove('hidden');
-
-                // Llenar inputs Admin
+                // Admin Inputs
                 document.getElementById('confHeroTitle').value = data.heroTitle || '';
                 document.getElementById('confHeroSubtitle').value = data.heroSubtitle || '';
                 document.getElementById('confWhatsapp').value = data.whatsapp || '';
@@ -494,7 +517,6 @@
             }
         });
 
-        // Guardar Configuración
         document.getElementById('btnSaveSettings').onclick = async () => {
             await setDoc(settingsRef, {
                 heroTitle: document.getElementById('confHeroTitle').value,
@@ -507,18 +529,17 @@
 
         // --- 2. GESTIÓN SERVICIOS ---
         const servicesCol = collection(db, 'services');
-        
-        // Cargar Servicios
         onSnapshot(query(servicesCol, orderBy('order')), (snap) => {
             const adminList = document.getElementById('servicesListAdmin');
             const publicGrid = document.getElementById('publicServicesGrid');
+            
+            // Si hay datos en Firebase, limpiamos los hardcodeados. Si no, dejamos los hardcodeados.
+            if(!snap.empty) publicGrid.innerHTML = '';
             adminList.innerHTML = '';
-            publicGrid.innerHTML = '';
 
             snap.forEach(d => {
                 const s = { id: d.id, ...d.data() };
                 
-                // Admin List Item
                 const div = document.createElement('div');
                 div.className = 'admin-list-item';
                 div.innerHTML = `
@@ -530,7 +551,6 @@
                 `;
                 adminList.appendChild(div);
 
-                // Public Card
                 if(s.visible) {
                     const card = document.createElement('div');
                     card.className = 'service-card animate-on-scroll';
@@ -546,7 +566,6 @@
             });
         });
 
-        // Modal Servicios Logic
         window.openServiceModal = () => {
             document.getElementById('svcId').value = '';
             document.getElementById('svcTitle').value = '';
@@ -581,7 +600,7 @@
                 icon: document.getElementById('svcIcon').value,
                 details: document.getElementById('svcDesc').value,
                 visible: document.getElementById('svcVisible').checked,
-                order: Date.now() // Orden simple
+                order: Date.now()
             };
             if(id) await updateDoc(doc(db, 'services', id), data);
             else await addDoc(servicesCol, data);
@@ -591,7 +610,6 @@
         // --- 3. GESTIÓN BICICLETAS (CORE) ---
         const bikesCol = collection(db, 'bicicletas');
 
-        // Guardar Bici (con Storage)
         document.getElementById('btnSaveBike').onclick = async () => {
             const client = document.getElementById('newClient').value;
             const model = document.getElementById('newModel').value;
@@ -617,7 +635,6 @@
                 });
                 
                 showNotif('¡Bici Creada!', false);
-                // Reset UI
                 document.getElementById('newClient').value = '';
                 document.getElementById('newModel').value = '';
                 document.getElementById('coverInput').value = '';
@@ -626,7 +643,6 @@
             } catch(e) { console.error(e); showNotif('Error al guardar', true); }
         };
 
-        // Cargar Bicis
         onSnapshot(query(bikesCol, orderBy('createdAt', 'desc')), (snap) => {
             const publicGrid = document.getElementById('publicBikesGrid');
             const selector = document.getElementById('bikeSelector');
@@ -639,14 +655,11 @@
             snap.forEach(d => {
                 const b = { id: d.id, ...d.data() };
                 localBikes.push(b);
-                
-                // Select Admin
                 const opt = document.createElement('option');
                 opt.value = b.id;
                 opt.textContent = `${b.model} - ${b.client} (${b.status.toUpperCase()})`;
                 selector.appendChild(opt);
 
-                // Public Card
                 const statusColors = { diagnostico:'#f39c12', reparacion:'#3498db', listo:'#2ecc71', entregado:'#95a5a6' };
                 const labels = { diagnostico:'Diagnóstico', reparacion:'En Reparación', listo:'Lista para Retiro', entregado:'Entregada' };
                 
@@ -665,12 +678,10 @@
             });
         });
 
-        // Selector Edición
         document.getElementById('bikeSelector').onchange = (e) => {
             const id = e.target.value;
             const area = document.getElementById('editArea');
             if(!id) { area.classList.add('hidden'); return; }
-            
             const b = localBikes.find(x => x.id === id);
             currentEditingId = id;
             document.getElementById('editingLabel').textContent = `${b.model} - ${b.client}`;
@@ -678,13 +689,12 @@
             area.classList.remove('hidden');
         };
 
-        // Actualizar Estado
         document.getElementById('btnUpdateStatus').onclick = async () => {
             await updateDoc(doc(db, 'bicicletas', currentEditingId), { status: document.getElementById('editStatus').value });
             showNotif('Estado actualizado');
         };
 
-        // SUBIR REPORTE (Storage + ArrayUnion)
+        // --- SUBIR REPORTE (3 Fotos) ---
         document.getElementById('btnSaveReport').onclick = async () => {
             const name = document.getElementById('reportName').value;
             if(!name) return showNotif('Falta nombre reporte', true);
@@ -704,19 +714,43 @@
                 
                 await updateDoc(doc(db, 'bicicletas', currentEditingId), { stages: arrayUnion(newStage) });
                 showNotif('Reporte Agregado!');
-                
-                // Limpiar
                 document.getElementById('reportName').value = '';
                 ['upBefore','upClean','upGreased'].forEach(id => {
                     document.getElementById(id).classList.remove('has-file');
                     document.getElementById(id).querySelector('img').style.display='none';
                 });
                 fileCache.before = null; fileCache.clean = null; fileCache.greased = null;
-
             } catch(e) { console.error(e); showNotif('Error subiendo fotos', true); }
         };
 
-        // Borrar Bici
+        // --- SUBIR FOTO SIMPLE (1 Foto) ---
+        document.getElementById('btnSaveSimple').onclick = async () => {
+            const name = document.getElementById('simpleName').value;
+            if(!name) return showNotif('Falta título', true);
+            if(!fileCache.simple) return showNotif('Sube la foto', true);
+
+            showNotif('Subiendo imagen...', false);
+            const bike = localBikes.find(x => x.id === currentEditingId);
+
+            try {
+                const photoUrl = await uploadFileToStorage(fileCache.simple, `bikes/${bike.trackingCode}/${Date.now()}_simple.jpg`);
+                
+                const newStage = { 
+                    type: 'simple', 
+                    name: name, 
+                    date: new Date().toLocaleDateString(), 
+                    photo: photoUrl 
+                };
+
+                await updateDoc(doc(db, 'bicicletas', currentEditingId), { stages: arrayUnion(newStage) });
+                showNotif('Foto Simple Agregada!');
+                document.getElementById('simpleName').value = '';
+                document.getElementById('upSimple').classList.remove('has-file');
+                document.getElementById('upSimple').querySelector('img').style.display='none';
+                fileCache.simple = null;
+            } catch(e) { console.error(e); showNotif('Error subiendo', true); }
+        };
+
         document.getElementById('btnDeleteBike').onclick = async () => {
             if(confirm('¿Eliminar bici y todo su historial?')) {
                 await deleteDoc(doc(db, 'bicicletas', currentEditingId));
@@ -726,7 +760,6 @@
             }
         };
 
-        // --- BUSQUEDA & MODAL PÚBLICO ---
         document.getElementById('btnSearch').onclick = () => {
             const code = document.getElementById('searchCode').value.trim();
             const found = localBikes.find(b => b.trackingCode === code);
@@ -743,15 +776,24 @@
             let stagesHtml = '';
             if(b.stages && b.stages.length) {
                 b.stages.forEach(s => {
-                    stagesHtml += `
-                        <div class="comparison-container">
-                            <div class="comparison-header"><span>${s.name}</span><span>${s.date}</span></div>
-                            <div class="comparison-grid">
-                                ${s.photos.before ? `<div class="comparison-item"><img src="${s.photos.before}" onclick="window.open(this.src)"><div class="photo-label">Antes</div></div>` : ''}
-                                ${s.photos.clean ? `<div class="comparison-item"><img src="${s.photos.clean}" onclick="window.open(this.src)"><div class="photo-label">Limpio</div></div>` : ''}
-                                ${s.photos.greased ? `<div class="comparison-item"><img src="${s.photos.greased}" onclick="window.open(this.src)"><div class="photo-label">Engrasado</div></div>` : ''}
-                            </div>
-                        </div>`;
+                    if(s.type === 'report') {
+                        stagesHtml += `
+                            <div class="comparison-container">
+                                <div class="comparison-header"><span>${s.name}</span><span>${s.date}</span></div>
+                                <div class="comparison-grid">
+                                    ${s.photos.before ? `<div class="comparison-item"><img src="${s.photos.before}" onclick="window.open(this.src)"><div class="photo-label">Antes</div></div>` : ''}
+                                    ${s.photos.clean ? `<div class="comparison-item"><img src="${s.photos.clean}" onclick="window.open(this.src)"><div class="photo-label">Limpio</div></div>` : ''}
+                                    ${s.photos.greased ? `<div class="comparison-item"><img src="${s.photos.greased}" onclick="window.open(this.src)"><div class="photo-label">Engrasado</div></div>` : ''}
+                                </div>
+                            </div>`;
+                    } else {
+                        // FOTO SIMPLE
+                        stagesHtml += `
+                            <div class="comparison-container">
+                                <div class="comparison-header"><span>${s.name}</span><span>${s.date}</span></div>
+                                <img src="${s.photo}" style="width:100%; display:block; cursor:pointer;" onclick="window.open(this.src)">
+                            </div>`;
+                    }
                 });
             } else {
                 stagesHtml = '<p style="text-align:center;color:#999;padding:20px;">Sin historial fotográfico aún.</p>';
@@ -768,7 +810,6 @@
             `;
         }
 
-        // Click outside to close
         document.getElementById('bikeModal').onclick = (e) => {
             if(e.target.id === 'bikeModal') {
                 e.target.classList.remove('active');
