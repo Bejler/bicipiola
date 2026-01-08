@@ -392,15 +392,16 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // ==========================================
-        //  PEGAR TUS CREDENCIALES AQUI ABAJO
+        //  TUS CREDENCIALES (YA INTEGRADAS)
         // ==========================================
         const firebaseConfig = {
-            apiKey: "TU_API_KEY_AQUI",
-            authDomain: "TU_PROYECTO.firebaseapp.com",
-            projectId: "TU_ID",
-            storageBucket: "TU_BUCKET",
-            messagingSenderId: "TU_SENDER",
-            appId: "TU_APP_ID"
+            apiKey: "AIzaSyA0Cg0zMBVpgicANllyMJB7NbcFkbcxGSw",
+            authDomain: "bicipiola-4efb8.firebaseapp.com",
+            projectId: "bicipiola-4efb8",
+            storageBucket: "bicipiola-4efb8.firebasestorage.app",
+            messagingSenderId: "179458497620",
+            appId: "1:179458497620:web:aa097b46ac9097bface1c1",
+            measurementId: "G-G9KCVS2SV1"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -452,7 +453,7 @@
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
                     
-                    // Lógica de redimensionamiento (Max ancho 800px)
+                    // Lógica de redimensionamiento (Max ancho 800px para eficiencia)
                     const maxWidth = 800;
                     const scale = maxWidth / img.width;
                     canvas.width = maxWidth;
