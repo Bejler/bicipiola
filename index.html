@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BICIPIOLA - Taller Profesional</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Raleway:wght@800&display=swap" rel="stylesheet">
+    <style>
+        /* ESTILOS CSS */
+        :root { --primary: #27ae60; --primary-dark: #219653; --secondary: #3498db; --accent: #e74c3c; --dark: #2c3e50; --light: #ecf0f1; --gray: #95a5a6; --light-gray: #f5f7fa; --shadow: 0 4px 20px rgba(0,0,0,0.1); --transition: all 0.4s ease; --radius: 12px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%); color: var(--dark); line-height: 1.6; overflow-x: hidden; }
+        
+        /* Header & Nav */
+        header { background-color: rgba(255, 255, 255, 0.95); box-shadow: var(--shadow); position: fixed; width: 100%; top: 0; z-index: 1000; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-family: 'Raleway', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--primary); text-decoration: none; }
+        nav ul { display: flex; list-style: none; } nav ul li { margin-left: 30px; }
+        nav ul li a { text-decoration: none; color: var(--dark); font-weight: 500; transition: var(--transition); }
+        
+        /* Hero Section */
+        .hero { height: 100vh; display: flex; align-items: center; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); background-size: cover; background-position: center; color: white; text-align: center; justify-content: center; }
+        .hero-content { z-index: 2; max-width: 800px; padding: 20px; } .brand-title { font-size: 3.5rem; font-weight: 800; margin-bottom: 20px;}
+        .btn { padding: 12px 30px; background: var(--primary); color: white; border-radius: 50px; text-decoration: none; display: inline-block; margin: 10px; cursor: pointer; border: none; font-size: 1rem; font-weight: 600; box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4); }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(39, 174, 96, 0.6); }
+
+        /* Sections */
+        .services, .bikes-section, .tracking { padding: 100px 5%; }
+        .section-title { text-align: center; margin-bottom: 60px; }
+        .section-title h2 { font-size: 2.5rem; margin-bottom: 15px; }
+        
+        /* Grids */
+        .services-grid, .bikes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        
+        /* Cards */
+        .service-card, .bike-card { background: white; padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow); text-align: center; transition: var(--transition); position: relative; overflow: hidden; }
+        .bike-image { width: 100%; height: 220px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; }
+        
+        /* Status Colors */
+        .status-diagnostico { color: #f39c12; font-weight: bold; } 
+        .status-reparacion { color: #3498db; font-weight: bold; } 
+        .status-listo { color: #2ecc71; font-weight: bold; }
+        .status-entregado { color: #95a5a6; font-weight: bold; }
+
+        /* Admin Login Modal */
+        .login-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 3000; opacity: 0; pointer-events: none; transition: var(--transition); }
+        .login-modal.active { opacity: 1; pointer-events: all; }
+        .login-box { background: white; padding: 40px; border-radius: var(--radius); width: 100%; max-width: 400px; text-align: center; }
+        .login-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; }
+        
+        /* Admin Interface */
+        .admin-panel { display: none; background: #fff; padding: 30px; margin-top: 100px; border: 2px dashed var(--primary); border-radius: var(--radius); margin-bottom: 30px;}
+        .form-group { margin-bottom: 15px; } 
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-family: inherit; }
+        
+        /* Notification */
+        .notification { position: fixed; top: 20px; right: 20px; padding: 15px 25px; background: var(--primary); color: white; border-radius: 8px; transform: translateX(150%); transition: transform 0.3s ease; z-index: 4000; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .notification.show { transform: translateX(0); }
+        
+        /* Admin Controls */
+        .admin-controls { display: none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; }
+        .admin-controls select { padding: 5px; border-radius: 5px; margin-right: 5px; }
+
+        /* Search */
+        .search-box { display: flex; justify-content: center; margin-top: 20px; }
+        .search-box input { padding: 15px; border-radius: 30px 0 0 30px; border: 1px solid #ddd; width: 100%; max-width: 400px; outline: none; }
+        .search-btn { border-radius: 0 30px 30px 0; margin: 0; padding: 15px 30px; }
+        
+        /* Footer */
+        footer { background: var(--dark); color: white; padding: 50px 5%; margin-top: 50px; }
+        
+        /* Visibility Logic */
+        body:not(.is-admin) .admin-only { display: none !important; }
+        body.is-admin .admin-only { display: block !important; }
+        body.is-admin .nav-login { display: none; }
+        
+        @media (max-width: 768px) {
+            .brand-title { font-size: 2.5rem; }
+            nav ul { display: none; } /* Simplificado para móvil */
+            .nav-mobile-visible { display: block; position: absolute; top: 20px; right: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="notification" id="notification">Operación exitosa</div>
+
+    <div class="login-modal" id="loginModal">
+        <div class="login-box">
+            <h3 style="margin-bottom: 20px; color: var(--primary);">Administración</h3>
+            <input type="email" id="adminEmail" placeholder="Correo Administrador">
+            <input type="password" id="adminPass" placeholder="Contraseña">
+            <button class="btn" id="doLoginBtn" style="width: 100%;">Ingresar</button>
+            <button class="btn" style="background: #95a5a6; width: 100%;" onclick="document.getElementById('loginModal').classList.remove('active')">Cancelar</button>
+        </div>
+    </div>
+
+    <header>
+        <a href="#" class="logo">BICIPIOLA</a>
+        <nav>
+            <ul>
+                <li><a href="#servicios">Servicios</a></li>
+                <li><a href="#bicicletas">Taller en Vivo</a></li>
+                <li><a href="#tracking">Seguimiento</a></li>
+                <li class="nav-login"><a href="#" onclick="document.getElementById('loginModal').classList.add('active')"><i class="fas fa-lock"></i> Admin</a></li>
+                <li class="admin-only"><a href="#" id="logoutBtn" style="color: var(--accent); font-weight: bold;"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <div class="brand-title">BICIPIOLA</div>
+            <h2>Expertos en Mantención de Bicicletas</h2>
+            <p style="font-size: 1.2rem; margin: 20px 0;">Servicio profesional con seguimiento online en tiempo real.</p>
+            <a href="#tracking" class="btn">Ver estado de mi bici</a>
+            <a href="https://wa.me/56933755577" class="btn" style="background: #25D366;"><i class="fab fa-whatsapp"></i> Contactar</a>
+        </div>
+    </section>
+
+    <div class="container admin-only" style="padding: 0 5%;">
+        <div class="admin-panel">
+            <h2 style="color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
+                <i class="fas fa-tools"></i> Panel de Gestión
+            </h2>
+            <div class="form-group">
+                <h3>Ingresar Nueva Bicicleta</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <input type="text" id="newClient" placeholder="Nombre Cliente (Ej: Juan Pérez)">
+                    <input type="text" id="newModel" placeholder="Modelo Bicicleta (Ej: Trek Marlin 5)">
+                </div>
+                <select id="newStatus" style="margin-top: 10px;">
+                    <option value="diagnostico">🟡 En Diagnóstico</option>
+                    <option value="reparacion">🔵 En Reparación</option>
+                    <option value="listo">🟢 Lista para Retiro</option>
+                    <option value="entregado">⚪ Entregada</option>
+                </select>
+                <textarea id="newNotes" rows="3" placeholder="Detalles de la reparación..." style="margin-top: 10px;"></textarea>
+                
+                <div style="margin-top: 10px; background: #f9f9f9; padding: 10px; border-radius: 8px;">
+                    <label style="font-weight: bold;">Foto de la bici:</label>
+                    <input type="file" id="newPhotoInput" accept="image/*" style="border: none;">
+                    <small style="display: block; color: #7f8c8d;">*Sube fotos livianas para que cargue rápido.</small>
+                </div>
+                
+                <button class="btn" id="saveBikeBtn" style="width: 100%; margin: 20px 0 0 0;">Guardar en Sistema</button>
+            </div>
+        </div>
+    </div>
+
+    <section id="servicios" class="services">
+        <div class="section-title">
+            <h2>Nuestros Servicios</h2>
+            <p>Calidad garantizada para tu compañera de ruta</p>
+        </div>
+        <div class="services-grid">
+            <div class="service-card">
+                <i class="fas fa-wrench fa-3x" style="color: var(--primary); margin-bottom: 20px;"></i>
+                <h3>Mantención Básica</h3>
+                <p style="font-size: 2rem; font-weight: 800; color: var(--primary); margin: 10px 0;">$25.000</p>
+                <ul style="text-align: left; list-style: none; padding-left: 20px;">
+                    <li><i class="fas fa-check" style="color: var(--primary);"></i> Regulación de cambios</li>
+                    <li><i class="fas fa-check" style="color: var(--primary);"></i> Ajuste de frenos</li>
+                    <li><i class="fas fa-check" style="color: var(--primary);"></i> Lubricación de cadena</li>
+                    <li><i class="fas fa-check" style="color: var(--primary);"></i> Apriete general</li>
+                </ul>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-oil-can fa-3x" style="color: var(--primary); margin-bottom: 20px;"></i>
+                <h3>Mantención Full</h3>
+                <p style="font-size: 2rem; font-weight: 800; color: var(--primary); margin: 10px 0;">$45.000</p>
+                <ul style="text-align: left; list-style: none; padding-left: 20px;">
+                    <li><i class="fas fa-check" style="color: var(--primary);"></i> Todo lo básico incluido</li>
+                    <li><i class="fas fa-check" style="color: var(--primary);"></i> Desarme y limpieza de transmisión</li>
+                    <li><i class="fas fa-check" style="color: var(--primary);"></i> Engrase de mazas y dirección</li>
+                    <li><i class="fas fa-check" style="color: var(--primary);"></i> Centrado de ruedas</li>
+                </ul>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-cog fa-3x" style="color: var(--primary); margin-bottom: 20px;"></i>
+                <h3>Reparaciones Específicas</h3>
+                <p style="font-size: 1.5rem; font-weight: 800; color: var(--primary); margin: 10px 0;">Cotizar</p>
+                <p>Sangrado de frenos, instalación de componentes, tubeless, reparaciones de cuadros y más.</p>
+                <a href="https://wa.me/56933755577" class="btn" style="margin-top: 15px; font-size: 0.9rem;">Consultar al WhatsApp</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="bicicletas" class="bikes-section">
+        <div class="section-title">
+            <h2>Estado del Taller</h2>
+            <p>Revisa en qué estamos trabajando actualmente</p>
+        </div>
+        <div class="bikes-grid" id="bikesContainer">
+            <p style="text-align: center; width: 100%; grid-column: 1/-1;">Cargando datos del taller...</p>
+        </div>
+    </section>
+
+    <section id="tracking" class="tracking">
+        <div class="section-title">
+            <h2>Seguimiento de tu Bici</h2>
+            <p>Ingresa el código que te entregamos para ver el detalle</p>
+        </div>
+        <div class="search-box">
+            <input type="text" id="trackingInput" placeholder="Ej: BICI-4821">
+            <button class="btn search-btn" id="trackingBtn">Buscar</button>
+        </div>
+        <div id="trackingResult" style="margin-top: 40px; max-width: 600px; margin-left: auto; margin-right: auto;"></div>
+    </section>
+
+    <footer>
+        <div style="display: flex; justify-content: space-around; flex-wrap: wrap; max-width: 1200px; margin: 0 auto;">
+            <div style="margin-bottom: 20px;">
+                <h3>BICIPIOLA</h3>
+                <p>Concón, Valparaíso</p>
+                <p>+56 9 3375 5577</p>
+            </div>
+            <div>
+                <h3>Síguenos</h3>
+                <a href="https://instagram.com/bicipiola" style="color: white; font-size: 1.5rem; margin-right: 15px;"><i class="fab fa-instagram"></i></a>
+                <a href="https://facebook.com" style="color: white; font-size: 1.5rem;"><i class="fab fa-facebook"></i></a>
+            </div>
+        </div>
+        <p style="text-align: center; margin-top: 30px; font-size: 0.8rem; opacity: 0.7;">&copy; 2026 BICIPIOLA. Todos los derechos reservados.</p>
+    </footer>
+
+    <script type="module">
+        // Importamos Firebase desde la web (sin instalar nada)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // TUS CREDENCIALES DE LA IMAGEN
+        const firebaseConfig = {
+            apiKey: "AIzaSyA0Cg0zMBVpgicANllyMJB7NbcFkbcxGSw",
+            authDomain: "bicipiola-4efb8.firebaseapp.com",
+            projectId: "bicipiola-4efb8",
+            storageBucket: "bicipiola-4efb8.firebasestorage.app",
+            messagingSenderId: "179458497620",
+            appId: "1:179458497620:web:aa097b46ac9097bface1c1",
+            measurementId: "G-G9KCVS2SV1"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const bikesCollection = collection(db, "bicicletas");
+
+        // Referencias DOM
+        const doLoginBtn = document.getElementById('doLoginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const bikesContainer = document.getElementById('bikesContainer');
+
+        // --- AUTENTICACIÓN ADMIN ---
+        
+        // Login
+        doLoginBtn.addEventListener('click', async () => {
+            const email = document.getElementById('adminEmail').value;
+            const pass = document.getElementById('adminPass').value;
+            
+            if(!email || !pass) return showNotif("Ingresa correo y contraseña", true);
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                document.getElementById('loginModal').classList.remove('active');
+                showNotif('¡Bienvenido Cristóbal!');
+            } catch (error) {
+                console.error(error);
+                showNotif('Error: Revisa tus datos', true);
+            }
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            signOut(auth).then(() => showNotif('Sesión cerrada'));
+        });
+
+        // Observador de estado (Detecta si eres admin o cliente)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.body.classList.add('is-admin'); // Muestra controles
+            } else {
+                document.body.classList.remove('is-admin'); // Oculta controles
+            }
+            loadBikesRealtime(); // Recargar bicis con/sin botones de editar
+        });
+
+        // --- GESTIÓN DE BICICLETAS ---
+
+        // 1. Guardar nueva bici
+        document.getElementById('saveBikeBtn').addEventListener('click', async () => {
+            const client = document.getElementById('newClient').value;
+            const model = document.getElementById('newModel').value;
+            const status = document.getElementById('newStatus').value;
+            const notes = document.getElementById('newNotes').value;
+            const fileInput = document.getElementById('newPhotoInput');
+
+            if (!client || !model) return showNotif('Falta el nombre o modelo', true);
+            
+            showNotif('Guardando...', false);
+
+            // Generar código aleatorio (Ej: BICI-8492)
+            const trackingCode = 'BICI-' + Math.floor(1000 + Math.random() * 9000);
+
+            // Foto por defecto si no sube ninguna
+            let photoBase64 = "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&w=500&q=60";
+
+            // Si subió foto, convertirla
+            if (fileInput.files.length > 0) {
+                try {
+                    photoBase64 = await toBase64(fileInput.files[0]);
+                } catch (e) {
+                    return showNotif('Error al procesar la imagen', true);
+                }
+            }
+
+            try {
+                await addDoc(bikesCollection, {
+                    client, model, status, notes, trackingCode,
+                    photo: photoBase64,
+                    createdAt: new Date()
+                });
+                showNotif(`¡Listo! Código: ${trackingCode}`);
+                
+                // Limpiar formulario
+                document.getElementById('newClient').value = '';
+                document.getElementById('newModel').value = '';
+                document.getElementById('newNotes').value = '';
+                document.getElementById('newPhotoInput').value = '';
+            } catch (e) {
+                console.error(e);
+                showNotif('Error al guardar en base de datos', true);
+            }
+        });
+
+        // 2. Cargar bicis en tiempo real
+        function loadBikesRealtime() {
+            // Ordenar por fecha de creación (más nuevas primero)
+            const q = query(bikesCollection, orderBy("createdAt", "desc"));
+
+            onSnapshot(q, (snapshot) => {
+                bikesContainer.innerHTML = ''; // Limpiar contenedor
+                
+                if(snapshot.empty) {
+                    bikesContainer.innerHTML = '<p style="text-align:center; width:100%;">No hay bicicletas en el taller hoy.</p>';
+                    return;
+                }
+
+                snapshot.forEach((docSnap) => {
+                    const bike = docSnap.data();
+                    const id = docSnap.id;
+                    
+                    // Textos y colores legibles
+                    const statusLabels = { 'diagnostico': 'En Diagnóstico', 'reparacion': 'En Reparación', 'listo': 'Lista para Retiro', 'entregado': 'Entregada' };
+                    const statusClasses = { 'diagnostico': 'status-diagnostico', 'reparacion': 'status-reparacion', 'listo': 'status-listo', 'entregado': 'status-entregado' };
+
+                    // Crear tarjeta
+                    const card = document.createElement('div');
+                    card.className = 'bike-card';
+                    card.innerHTML = `
+                        <img src="${bike.photo}" class="bike-image" alt="Bici">
+                        <h3>${bike.model}</h3>
+                        <p style="color: #7f8c8d; font-size: 0.9rem;">Cliente: ${bike.client}</p>
+                        <p class="${statusClasses[bike.status]}" style="margin: 10px 0;">
+                            ${statusLabels[bike.status].toUpperCase()}
+                        </p>
+                        <div style="background: #f1f2f6; padding: 5px; border-radius: 5px; display: inline-block; font-family: monospace;">
+                            ${bike.trackingCode}
+                        </div>
+
+                        <div class="admin-controls admin-only">
+                            <label style="display:block; text-align:left; font-size:0.8rem; margin-bottom:5px;">Cambiar Estado:</label>
+                            <div style="display:flex; justify-content:space-between;">
+                                <select onchange="window.updateStatus('${id}', this.value)" style="flex:1;">
+                                    <option value="diagnostico" ${bike.status==='diagnostico'?'selected':''}>Diagnóstico</option>
+                                    <option value="reparacion" ${bike.status==='reparacion'?'selected':''}>Reparación</option>
+                                    <option value="listo" ${bike.status==='listo'?'selected':''}>Lista</option>
+                                    <option value="entregado" ${bike.status==='entregado'?'selected':''}>Entregada</option>
+                                </select>
+                                <button class="btn" style="background:#e74c3c; padding: 5px 12px; margin:0;" onclick="window.deleteBike('${id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    bikesContainer.appendChild(card);
+                });
+            });
+        }
+
+        // --- BUSQUEDA (CLIENTE) ---
+        document.getElementById('trackingBtn').addEventListener('click', async () => {
+            const code = document.getElementById('trackingInput').value.trim();
+            const resultDiv = document.getElementById('trackingResult');
+            
+            if(!code) return showNotif('Ingresa un código', true);
+            
+            resultDiv.innerHTML = '<p style="text-align:center;">Buscando...</p>';
+
+            // Buscar en Firestore donde trackingCode sea igual al input
+            const q = query(bikesCollection, where("trackingCode", "==", code));
+            const querySnapshot = await getDocs(q);
+
+            resultDiv.innerHTML = ''; // Limpiar
+
+            if (querySnapshot.empty) {
+                resultDiv.innerHTML = `
+                    <div style="background: #ffeaa7; padding: 20px; border-radius: 10px; text-align: center; color: #d35400;">
+                        <i class="fas fa-exclamation-circle fa-2x"></i>
+                        <p style="margin-top:10px;">No encontramos una bicicleta con el código <strong>${code}</strong>.</p>
+                        <p style="font-size:0.9rem;">Verifica que esté bien escrito (Ej: BICI-1234)</p>
+                    </div>
+                `;
+            } else {
+                querySnapshot.forEach((doc) => {
+                    const bike = doc.data();
+                    const statusLabels = { 'diagnostico': 'En Diagnóstico', 'reparacion': 'En Reparación', 'listo': 'Lista para Retiro', 'entregado': 'Entregada' };
+                    
+                    resultDiv.innerHTML = `
+                        <div class="bike-card" style="border: 2px solid var(--primary); transform: none;">
+                            <div style="background: var(--primary); color: white; padding: 5px; position: absolute; top: 0; left: 0; width: 100%;">RESULTADO DE BÚSQUEDA</div>
+                            <img src="${bike.photo}" class="bike-image" style="margin-top: 30px;">
+                            <h2>${bike.model}</h2>
+                            <p>Cliente: ${bike.client}</p>
+                            <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
+                            <p style="font-size: 1.2rem;">Estado: <strong>${statusLabels[bike.status]}</strong></p>
+                            <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: left;">
+                                <strong><i class="fas fa-clipboard-list"></i> Informe Técnico:</strong>
+                                <p style="margin-top: 5px;">${bike.notes || 'Sin observaciones adicionales.'}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        });
+
+
+        // --- FUNCIONES GLOBALES (Window) ---
+        // Necesarias porque el HTML 'onclick' no ve dentro del módulo
+        window.updateStatus = async (id, newStatus) => {
+            try {
+                const bikeRef = doc(db, "bicicletas", id);
+                await updateDoc(bikeRef, { status: newStatus });
+                showNotif('Estado actualizado correctamente');
+            } catch(e) { console.error(e); showNotif('Error al actualizar', true); }
+        };
+
+        window.deleteBike = async (id) => {
+            if(confirm('¿Estás seguro de eliminar este registro? No se puede deshacer.')) {
+                try {
+                    await deleteDoc(doc(db, "bicicletas", id));
+                    showNotif('Registro eliminado');
+                } catch(e) { console.error(e); showNotif('Error al eliminar', true); }
+            }
+        };
+
+        // Utilidad: Notificaciones
+        function showNotif(msg, isError = false) {
+            const notif = document.getElementById('notification');
+            notif.textContent = msg;
+            notif.style.background = isError ? '#e74c3c' : '#27ae60';
+            notif.classList.add('show');
+            setTimeout(() => notif.classList.remove('show'), 3000);
+        }
+
+        // Utilidad: Convertir archivo a Base64
+        const toBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    </script>
+</body>
+</html>
