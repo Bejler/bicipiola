@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Taller de Bicicletas profesional. Seguimiento en línea.">
+    <meta name="description" content="Taller de Bicicletas profesional. Seguimiento en línea, mantenciones y reparaciones.">
     <title>BICIPIOLA - Taller de Bicicletas</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Raleway:wght@800&display=swap" rel="stylesheet">
@@ -20,7 +20,10 @@
         nav ul li a { text-decoration: none; color: var(--dark); font-weight: 500; transition: var(--transition); position: relative; padding: 5px 0; }
         nav ul li a:hover { color: var(--primary); }
 
-        /* Menú Admin */
+        /* Menú Admin y Overlay Móvil */
+        .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; display: none; opacity: 0; transition: opacity 0.3s; }
+        .menu-overlay.active { display: block; opacity: 1; }
+
         .admin-menu-btn { display: flex; flex-direction: column; justify-content: space-between; width: 30px; height: 21px; cursor: pointer; position: relative; z-index: 1001; }
         .admin-menu-btn span { display: block; height: 3px; width: 100%; background-color: var(--dark); border-radius: 2px; transition: var(--transition); }
         .admin-menu { position: fixed; top: 0; right: -350px; width: 320px; height: 100vh; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); z-index: 1000; transition: right 0.4s ease; padding: 80px 20px 20px; overflow-y: auto; }
@@ -132,6 +135,8 @@
     </style>
 </head>
 <body>
+
+    <div class="menu-overlay" id="menuOverlay"></div>
 
     <div class="notification" id="notification"></div>
 
@@ -351,6 +356,7 @@
     </div>
 
     <script type="module">
+        // 1. IMPORTACIONES
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { 
             getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, 
@@ -363,36 +369,290 @@
             getStorage, ref, uploadBytesResumable, getDownloadURL 
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-        // 1. CONFIGURACIÓN E INICIALIZACIÓN
+        // 2. CONFIGURACIÓN E INICIALIZACIÓN (CRÍTICO: DEBE IR PRIMERO)
+        // -------------------------------------------------------------
         const firebaseConfig = {
             apiKey: "AIzaSyA0Cg0zMBVpgicANllyMJB7NbcFkbcxGSw",
             authDomain: "bicipiola-4efb8.firebaseapp.com",
             projectId: "bicipiola-4efb8",
-            storageBucket: "bicipiola-4efb8.appspot.com", // CORRECTED
+            storageBucket: "bicipiola-4efb8.appspot.com", // URL CORREGIDA
             messagingSenderId: "179458497620",
             appId: "1:179458497620:web:aa097b46ac9097bface1c1",
             measurementId: "G-G9KCVS2SV1"
         };
 
+        // Inicializar servicios GLOBALMENTE
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
         const storage = getStorage(app);
 
-        // 2. VARIABLES DE ESTADO
+        console.log("Firebase inicializado correctamente");
+
+        // 3. VARIABLES DE ESTADO
         let localBikes = [];
         let currentEditingId = null;
+        // Cache de archivos: guarda el objeto File real
         let fileCache = { cover:null, before:null, clean:null, greased:null, simple:null };
 
-        // 3. UTILIDADES
+        // ---------------------------------------------------------
+        // 4. UTILIDADES CORE (Subida, Compresión, UI)
+        // ---------------------------------------------------------
+
         function showNotif(msg, isError = false) {
             const n = document.getElementById('notification');
-            n.textContent = msg;
-            n.className = isError ? 'notification show error' : 'notification show';
-            setTimeout(() => n.classList.remove('show'), 3000);
+            if(n) {
+                n.textContent = msg;
+                n.className = isError ? 'notification show error' : 'notification show';
+                setTimeout(() => n.classList.remove('show'), 3000);
+            }
             console.log(`[NOTIF] ${msg}`);
         }
 
+        // Compresor de Imágenes (Evita blobs colgados)
+        async function compressImage(file) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                img.src = url;
+                
+                img.onload = () => {
+                    URL.revokeObjectURL(url); // Liberar memoria
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    // Max ancho 1200px para optimizar storage
+                    const maxWidth = 1200; 
+                    const scale = Math.min(1, maxWidth / img.width);
+                    
+                    // Si es pequeña no redimensionar
+                    if (scale >= 1) {
+                         canvas.width = img.width;
+                         canvas.height = img.height;
+                    } else {
+                         canvas.width = img.width * scale;
+                         canvas.height = img.height * scale;
+                    }
+
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    // Exportar a Blob JPG 80% calidad
+                    canvas.toBlob(blob => {
+                        if(blob) resolve(blob);
+                        else reject(new Error("Error al comprimir imagen (blob null)"));
+                    }, 'image/jpeg', 0.8);
+                };
+                
+                img.onerror = (e) => {
+                    URL.revokeObjectURL(url);
+                    reject(e);
+                };
+            });
+        }
+
+        // Subida Robusta a Storage (Resumable + Promise Wrapper)
+        async function uploadFileToStorage(file, folderName) {
+            if (!storage) throw new Error("Storage no inicializado");
+            
+            try {
+                // Comprimir
+                const compressedBlob = await compressImage(file);
+                
+                // Generar nombre único: timestamp_random.jpg
+                const uniqueName = `${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
+                const fullPath = `bikes/${folderName}/${uniqueName}`;
+                
+                // Referencia
+                const storageRef = ref(storage, fullPath);
+                const uploadTask = uploadBytesResumable(storageRef, compressedBlob, { contentType: 'image/jpeg' });
+
+                return new Promise((resolve, reject) => {
+                    uploadTask.on('state_changed', 
+                        (snapshot) => {
+                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                            console.log('Upload is ' + progress + '% done');
+                        }, 
+                        (error) => {
+                            console.error("Upload failed:", error);
+                            reject(error);
+                        }, 
+                        async () => {
+                            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                            console.log('File available at', downloadURL);
+                            resolve(downloadURL);
+                        }
+                    );
+                });
+
+            } catch (error) {
+                console.error("Error en uploadFileToStorage:", error);
+                throw error;
+            }
+        }
+
+        // Configurar Uploaders Visuales
+        function setupUploader(divId, inputId, imgId, key) {
+            const div = document.getElementById(divId);
+            const input = document.getElementById(inputId);
+            const img = document.getElementById(imgId);
+
+            if(!div || !input || !img) return; 
+
+            div.onclick = () => input.click();
+            
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if(file) {
+                    const url = URL.createObjectURL(file);
+                    img.src = url;
+                    img.onload = () => URL.revokeObjectURL(url); // Liberar memoria
+                    img.style.display = 'block';
+                    div.classList.add('has-file');
+                    fileCache[key] = file; // Guardamos el FILE object
+                }
+            };
+        }
+
+        // Inicializar listeners de inputs de archivo
+        setupUploader('coverUploader', 'coverInput', 'coverPreview', 'cover');
+        setupUploader('upBefore', 'fileBefore', 'prevBefore', 'before');
+        setupUploader('upClean', 'fileClean', 'prevClean', 'clean');
+        setupUploader('upGreased', 'fileGreased', 'prevGreased', 'greased');
+        setupUploader('upSimple', 'fileSimple', 'prevSimple', 'simple');
+
+        // Helper para limpiar uploaders
+        function resetUploader(divId, imgId, cacheKey) {
+            const div = document.getElementById(divId);
+            const img = document.getElementById(imgId);
+            if(div) div.classList.remove('has-file');
+            if(img) { img.src = ''; img.style.display = 'none'; }
+            fileCache[cacheKey] = null;
+            const input = div.querySelector('input[type="file"]');
+            if(input) input.value = ''; 
+        }
+
+        // ---------------------------------------------------------
+        // 5. LÓGICA DE GUARDADO DE REPORTES
+        // ---------------------------------------------------------
+
+        // A. GUARDAR REPORTE COMPARATIVO
+        const btnSaveReport = document.getElementById('btnSaveReport');
+        if(btnSaveReport) {
+            btnSaveReport.onclick = async () => {
+                if(!currentEditingId) return showNotif('Selecciona una bici primero', true);
+                
+                const title = document.getElementById('reportName').value;
+                if(!title) return showNotif('Falta el nombre del componente', true);
+                
+                // Validar que haya al menos una imagen
+                if(!fileCache.before && !fileCache.clean && !fileCache.greased) {
+                    return showNotif('Sube al menos una foto', true);
+                }
+
+                showNotif('Procesando imágenes...', false);
+                btnSaveReport.disabled = true;
+                
+                // Buscar datos de la bici actual para usar su trackingCode en la carpeta
+                const bikeData = localBikes.find(b => b.id === currentEditingId);
+                const folderName = bikeData ? bikeData.trackingCode : 'unknown';
+
+                const imagesPayload = { before: null, clean: null, greased: null };
+
+                try {
+                    // Subir secuencialmente las que existan
+                    if(fileCache.before) {
+                        imagesPayload.before = await uploadFileToStorage(fileCache.before, folderName);
+                    }
+                    if(fileCache.clean) {
+                        imagesPayload.clean = await uploadFileToStorage(fileCache.clean, folderName);
+                    }
+                    if(fileCache.greased) {
+                        imagesPayload.greased = await uploadFileToStorage(fileCache.greased, folderName);
+                    }
+
+                    // Estructura EXACTA solicitada
+                    const newReport = {
+                        type: "comparison",
+                        title: title,
+                        images: imagesPayload,
+                        createdAt: new Date()
+                    };
+
+                    // Guardar en Firestore 
+                    const bikeRef = doc(db, 'bicicletas', currentEditingId);
+                    await updateDoc(bikeRef, {
+                        stages: arrayUnion(newReport)
+                    });
+
+                    showNotif('Reporte guardado exitosamente');
+
+                    // Limpiar UI y Cache
+                    document.getElementById('reportName').value = '';
+                    resetUploader('upBefore', 'prevBefore', 'before');
+                    resetUploader('upClean', 'prevClean', 'clean');
+                    resetUploader('upGreased', 'prevGreased', 'greased');
+
+                } catch (error) {
+                    console.error("Error Saving Report:", error);
+                    showNotif('Error al guardar reporte. Revisa consola.', true);
+                } finally {
+                    btnSaveReport.disabled = false;
+                }
+            };
+        }
+
+        // B. GUARDAR FOTO SIMPLE
+        const btnSaveSimple = document.getElementById('btnSaveSimple');
+        if(btnSaveSimple) {
+            btnSaveSimple.onclick = async () => {
+                if(!currentEditingId) return showNotif('Selecciona una bici primero', true);
+
+                const title = document.getElementById('simpleName').value;
+                if(!title) return showNotif('Falta el título', true);
+                if(!fileCache.simple) return showNotif('Falta la foto', true);
+
+                showNotif('Subiendo foto...', false);
+                btnSaveSimple.disabled = true;
+
+                const bikeData = localBikes.find(b => b.id === currentEditingId);
+                const folderName = bikeData ? bikeData.trackingCode : 'unknown';
+
+                try {
+                    const url = await uploadFileToStorage(fileCache.simple, folderName);
+
+                    // Estructura EXACTA solicitada
+                    const newSimple = {
+                        type: "simple",
+                        title: title,
+                        image: url,
+                        createdAt: new Date()
+                    };
+
+                    // Guardar en Firestore
+                    const bikeRef = doc(db, 'bicicletas', currentEditingId);
+                    await updateDoc(bikeRef, {
+                        stages: arrayUnion(newSimple)
+                    });
+
+                    showNotif('Foto simple guardada');
+
+                    // Limpiar UI y Cache
+                    document.getElementById('simpleName').value = '';
+                    resetUploader('upSimple', 'prevSimple', 'simple');
+
+                } catch (error) {
+                    console.error("Error Saving Simple:", error);
+                    showNotif('Error al guardar foto simple', true);
+                } finally {
+                    btnSaveSimple.disabled = false;
+                }
+            };
+        }
+
+        // ---------------------------------------------------------
+        // 6. FUNCIONALIDAD GENERAL UI & AUTH
+        // ---------------------------------------------------------
+
+        // Tabs
         window.openTab = (id) => {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -402,89 +662,32 @@
         };
 
         window.scrollToAdmin = () => {
-            document.getElementById('sideMenu').classList.remove('active');
-            document.getElementById('menuBtn').classList.remove('active');
+            closeMenu();
             document.getElementById('adminPanelSection').scrollIntoView({ behavior: 'smooth' });
         };
 
-        document.getElementById('menuBtn').onclick = () => {
-            document.getElementById('menuBtn').classList.toggle('active');
-            document.getElementById('sideMenu').classList.toggle('active');
-        };
+        // Menú Móvil Overlay Logic
+        const menuBtn = document.getElementById('menuBtn');
+        const sideMenu = document.getElementById('sideMenu');
+        const menuOverlay = document.getElementById('menuOverlay');
 
-        // 4. STORAGE & COMPRESIÓN
-        async function compressImage(file) {
-            return new Promise((resolve, reject) => {
-                const img = new Image();
-                img.src = URL.createObjectURL(file);
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    const maxWidth = 1200; 
-                    const scale = Math.min(1, maxWidth / img.width);
-                    canvas.width = img.width * scale;
-                    canvas.height = img.height * scale;
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    canvas.toBlob(blob => {
-                        if(blob) resolve(blob);
-                        else reject(new Error("Error al comprimir"));
-                    }, 'image/jpeg', 0.8);
-                };
-                img.onerror = (e) => reject(e);
-            });
+        function toggleMenu() {
+            menuBtn.classList.toggle('active');
+            sideMenu.classList.toggle('active');
+            menuOverlay.classList.toggle('active');
         }
 
-        async function uploadFileToStorage(file, folderName) {
-            try {
-                const compressedBlob = await compressImage(file);
-                const uniqueName = `${Date.now()}_${Math.floor(Math.random()*1000)}.jpg`;
-                const storageRef = ref(storage, `bikes/${folderName}/${uniqueName}`);
-                const uploadTask = uploadBytesResumable(storageRef, compressedBlob, { contentType: 'image/jpeg' });
-                
-                await uploadTask;
-                const url = await getDownloadURL(storageRef);
-                console.log(`Subida OK: ${url}`);
-                return url;
-            } catch (error) {
-                console.error("Upload error:", error);
-                throw error;
-            }
+        function closeMenu() {
+            menuBtn.classList.remove('active');
+            sideMenu.classList.remove('active');
+            menuOverlay.classList.remove('active');
         }
 
-        function setupUploader(divId, inputId, imgId, key) {
-            const div = document.getElementById(divId);
-            const input = document.getElementById(inputId);
-            const img = document.getElementById(imgId);
-            if(!div) return;
-            div.onclick = () => input.click();
-            input.onchange = (e) => {
-                const file = e.target.files[0];
-                if(file) {
-                    img.src = URL.createObjectURL(file);
-                    img.style.display = 'block';
-                    div.classList.add('has-file');
-                    fileCache[key] = file;
-                }
-            };
-        }
+        menuBtn.onclick = toggleMenu;
+        menuOverlay.onclick = closeMenu;
 
-        setupUploader('coverUploader', 'coverInput', 'coverPreview', 'cover');
-        setupUploader('upBefore', 'fileBefore', 'prevBefore', 'before');
-        setupUploader('upClean', 'fileClean', 'prevClean', 'clean');
-        setupUploader('upGreased', 'fileGreased', 'prevGreased', 'greased');
-        setupUploader('upSimple', 'fileSimple', 'prevSimple', 'simple');
 
-        function resetUploader(divId, imgId, cacheKey) {
-            const div = document.getElementById(divId);
-            const img = document.getElementById(imgId);
-            if(div) div.classList.remove('has-file');
-            if(img) { img.src = ''; img.style.display = 'none'; }
-            fileCache[cacheKey] = null;
-            const input = div.querySelector('input[type="file"]');
-            if(input) input.value = '';
-        }
-
-        // 5. AUTH
+        // AUTH
         onAuthStateChanged(auth, user => {
             const panel = document.getElementById('adminPanelSection');
             if(user) {
@@ -504,174 +707,42 @@
                 showNotif("Bienvenido Admin");
             } catch(e) { showNotif("Error credenciales", true); }
         };
-        document.getElementById('btnLogout').onclick = () => signOut(auth);
+        document.getElementById('btnLogout').onclick = () => {
+            closeMenu();
+            signOut(auth);
+        }
 
-        // 6. GESTIÓN DE BICICLETAS (SNAPSHOT & EDIT)
-        const bikesCol = collection(db, 'bicicletas');
-        const bikeSelector = document.getElementById('bikeSelector');
-
-        onSnapshot(query(bikesCol, orderBy('createdAt', 'desc')), (snap) => {
-            const publicGrid = document.getElementById('publicBikesGrid');
-            publicGrid.innerHTML = '';
-            bikeSelector.innerHTML = '<option value="">-- Seleccionar Bici para Editar --</option>';
-            localBikes = [];
-
-            if(snap.empty) publicGrid.innerHTML = '<p style="text-align:center;width:100%;">No hay trabajos activos.</p>';
-
-            snap.forEach(docSnap => {
-                const b = { id: docSnap.id, ...docSnap.data() };
-                localBikes.push(b);
+        // SETTINGS
+        const settingsRef = doc(db, 'settings', 'site');
+        onSnapshot(settingsRef, (docSnap) => {
+            if(docSnap.exists()) {
+                const data = docSnap.data();
+                if(data.heroTitle) document.getElementById('heroTitleDisplay').textContent = data.heroTitle;
+                if(data.heroSubtitle) document.getElementById('heroSubtitleDisplay').textContent = data.heroSubtitle;
+                if(data.whatsapp) document.getElementById('heroWhatsappBtn').href = `https://wa.me/${data.whatsapp}`;
                 
-                // Selector
-                const opt = document.createElement('option');
-                opt.value = b.id;
-                opt.textContent = `${b.model} - ${b.client}`;
-                bikeSelector.appendChild(opt);
+                const tallerSec = document.getElementById('taller');
+                if(data.showTallerLive === false) tallerSec.classList.add('hidden');
+                else tallerSec.classList.remove('hidden');
 
-                // Grid
-                const statusColors = { diagnostico:'#f39c12', reparacion:'#3498db', listo:'#2ecc71', entregado:'#95a5a6' };
-                const labels = { diagnostico:'Diagnóstico', reparacion:'En Reparación', listo:'Lista para Retiro', entregado:'Entregada' };
-                
-                const card = document.createElement('div');
-                card.className = 'bike-card animate-on-scroll';
-                card.innerHTML = `
-                    <img src="${b.photo}" class="bike-cover" loading="lazy">
-                    <div class="bike-info">
-                        <h3>${b.model}</h3>
-                        <p style="color:#7f8c8d; font-size:0.9rem;">${b.client}</p>
-                        <span class="status-badge" style="background:${statusColors[b.status]}; margin-top:10px; display:inline-block;">${labels[b.status]}</span>
-                    </div>
-                `;
-                card.onclick = () => openBikeModal(b);
-                publicGrid.appendChild(card);
-            });
+                document.getElementById('confHeroTitle').value = data.heroTitle || '';
+                document.getElementById('confHeroSubtitle').value = data.heroSubtitle || '';
+                document.getElementById('confWhatsapp').value = data.whatsapp || '';
+                document.getElementById('confShowTaller').checked = data.showTallerLive !== false;
+            }
         });
 
-        // SELECTOR CHANGE - CRÍTICO PARA SETEAR ID
-        bikeSelector.onchange = async (e) => {
-            const id = e.target.value;
-            const area = document.getElementById('editArea');
-            if(!id) { area.classList.add('hidden'); return; }
-            
-            currentEditingId = id; // Set Global ID
-            
-            const b = localBikes.find(x => x.id === id);
-            document.getElementById('editingLabel').textContent = `${b.model} - ${b.client}`;
-            document.getElementById('editStatus').value = b.status;
-            area.classList.remove('hidden');
-
-            // Asegurar que stages existe
-            if(!b.stages) {
-                await setDoc(doc(db, 'bicicletas', id), { stages: [] }, { merge: true });
-            }
-            console.log("Editando Bici:", currentEditingId);
+        document.getElementById('btnSaveSettings').onclick = async () => {
+            await setDoc(settingsRef, {
+                heroTitle: document.getElementById('confHeroTitle').value,
+                heroSubtitle: document.getElementById('confHeroSubtitle').value,
+                whatsapp: document.getElementById('confWhatsapp').value,
+                showTallerLive: document.getElementById('confShowTaller').checked
+            }, { merge: true });
+            showNotif("Configuración Guardada");
         };
 
-        // 7. GUARDAR REPORTES
-        
-        // Reporte Comparativo
-        document.getElementById('btnSaveReport').onclick = async () => {
-            if(!currentEditingId) return showNotif('Selecciona una bici', true);
-            const title = document.getElementById('reportName').value;
-            if(!title) return showNotif('Falta nombre', true);
-            if(!fileCache.before && !fileCache.clean && !fileCache.greased) return showNotif('Sube al menos 1 foto', true);
-
-            showNotif('Subiendo imágenes...', false);
-            
-            const bike = localBikes.find(x => x.id === currentEditingId);
-            const folderName = bike ? bike.trackingCode : 'misc';
-            const imagesPayload = { before: null, clean: null, greased: null };
-
-            try {
-                if(fileCache.before) imagesPayload.before = await uploadFileToStorage(fileCache.before, folderName);
-                if(fileCache.clean) imagesPayload.clean = await uploadFileToStorage(fileCache.clean, folderName);
-                if(fileCache.greased) imagesPayload.greased = await uploadFileToStorage(fileCache.greased, folderName);
-
-                const newReport = {
-                    type: "comparison",
-                    title: title,
-                    images: imagesPayload,
-                    createdAt: new Date()
-                };
-
-                await updateDoc(doc(db, 'bicicletas', currentEditingId), {
-                    stages: arrayUnion(newReport)
-                });
-
-                showNotif('Reporte guardado!');
-                document.getElementById('reportName').value = '';
-                resetUploader('upBefore', 'prevBefore', 'before');
-                resetUploader('upClean', 'prevClean', 'clean');
-                resetUploader('upGreased', 'prevGreased', 'greased');
-            } catch(e) { console.error(e); showNotif('Error guardando reporte', true); }
-        };
-
-        // Foto Simple
-        document.getElementById('btnSaveSimple').onclick = async () => {
-            if(!currentEditingId) return showNotif('Selecciona una bici', true);
-            const title = document.getElementById('simpleName').value;
-            if(!title || !fileCache.simple) return showNotif('Falta título o foto', true);
-
-            showNotif('Subiendo foto...', false);
-            const bike = localBikes.find(x => x.id === currentEditingId);
-            const folderName = bike ? bike.trackingCode : 'misc';
-
-            try {
-                const url = await uploadFileToStorage(fileCache.simple, folderName);
-                const newSimple = {
-                    type: "simple",
-                    title: title,
-                    image: url,
-                    createdAt: new Date()
-                };
-
-                await updateDoc(doc(db, 'bicicletas', currentEditingId), {
-                    stages: arrayUnion(newSimple)
-                });
-
-                showNotif('Foto guardada!');
-                document.getElementById('simpleName').value = '';
-                resetUploader('upSimple', 'prevSimple', 'simple');
-            } catch(e) { console.error(e); showNotif('Error guardando foto', true); }
-        };
-
-        // Crear Bici
-        document.getElementById('btnSaveBike').onclick = async () => {
-            const client = document.getElementById('newClient').value;
-            const model = document.getElementById('newModel').value;
-            if(!client || !model) return showNotif('Faltan datos', true);
-            
-            showNotif('Creando...', false);
-            const code = 'BICI-' + Math.floor(1000 + Math.random()*9000);
-            
-            try {
-                let photoUrl = "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?w=500";
-                if(fileCache.cover) {
-                    photoUrl = await uploadFileToStorage(fileCache.cover, code);
-                }
-
-                await addDoc(bikesCol, {
-                    client, model, 
-                    notes: document.getElementById('newNotes').value,
-                    photo: photoUrl,
-                    status: 'diagnostico',
-                    trackingCode: code,
-                    stages: [],
-                    createdAt: new Date()
-                });
-                
-                showNotif(`Creada: ${code}`);
-                document.getElementById('newClient').value = '';
-                document.getElementById('newModel').value = '';
-                document.getElementById('newNotes').value = '';
-                document.getElementById('coverInput').value = '';
-                resetUploader('coverUploader', 'coverPreview', 'cover');
-            } catch(e) { console.error(e); showNotif('Error al crear', true); }
-        };
-
-        // 8. OTRAS FUNCIONES (Servicios, Settings, Modal)
-        
-        // Servicios (con auto-init)
+        // GESTIÓN SERVICIOS
         const servicesCol = collection(db, 'services');
         onSnapshot(query(servicesCol, orderBy('order')), async (snap) => {
             const adminList = document.getElementById('servicesListAdmin');
@@ -737,7 +808,9 @@
             setTimeout(() => document.getElementById('serviceModal').classList.add('active'), 10);
         };
 
-        window.delService = async (id) => { if(confirm('¿Borrar?')) await deleteDoc(doc(db, 'services', id)); };
+        window.delService = async (id) => {
+            if(confirm('¿Borrar servicio?')) await deleteDoc(doc(db, 'services', id));
+        };
 
         document.getElementById('btnSaveService').onclick = async () => {
             const id = document.getElementById('svcId').value;
@@ -751,39 +824,171 @@
             };
             if(id) await updateDoc(doc(db, 'services', id), data);
             else await addDoc(servicesCol, data);
+            
             document.getElementById('serviceModal').classList.remove('active');
             setTimeout(() => document.getElementById('serviceModal').style.display = 'none', 300);
         };
 
-        // Settings
-        const settingsRef = doc(db, 'settings', 'site');
-        onSnapshot(settingsRef, (docSnap) => {
-            if(docSnap.exists()) {
-                const data = docSnap.data();
-                document.getElementById('heroTitleDisplay').textContent = data.heroTitle || 'BICIPIOLA';
-                document.getElementById('heroSubtitleDisplay').textContent = data.heroSubtitle || 'Taller de Bicicletas';
-                if(data.whatsapp) document.getElementById('heroWhatsappBtn').href = `https://wa.me/${data.whatsapp}`;
-                const tallerSec = document.getElementById('taller');
-                if(data.showTallerLive === false) tallerSec.classList.add('hidden');
-                else tallerSec.classList.remove('hidden');
-                document.getElementById('confHeroTitle').value = data.heroTitle || '';
-                document.getElementById('confHeroSubtitle').value = data.heroSubtitle || '';
-                document.getElementById('confWhatsapp').value = data.whatsapp || '';
-                document.getElementById('confShowTaller').checked = data.showTallerLive !== false;
+
+        // ---------------------------------------------------------
+        // 7. GESTIÓN DE BICICLETAS (CORE & SELECTOR)
+        // ---------------------------------------------------------
+        const bikesCol = collection(db, 'bicicletas');
+
+        // 1. Guardar Bici Nueva
+        document.getElementById('btnSaveBike').onclick = async () => {
+            const client = document.getElementById('newClient').value;
+            const model = document.getElementById('newModel').value;
+            if(!client || !model) return showNotif('Faltan datos', true);
+            
+            showNotif('Creando bicicleta...', false);
+            const code = 'BICI-' + Math.floor(1000 + Math.random()*9000);
+            const btn = document.getElementById('btnSaveBike');
+            btn.disabled = true;
+            
+            try {
+                let photoUrl = "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?w=500";
+                if(fileCache.cover) {
+                    photoUrl = await uploadFileToStorage(fileCache.cover, `bikes/${code}/cover_${Date.now()}.jpg`);
+                }
+
+                await addDoc(bikesCol, {
+                    client, model, 
+                    notes: document.getElementById('newNotes').value,
+                    photo: photoUrl,
+                    status: 'diagnostico',
+                    trackingCode: code,
+                    stages: [],
+                    createdAt: new Date()
+                });
+                
+                showNotif(`¡Bici Creada! Código: ${code}`, false);
+                document.getElementById('newClient').value = '';
+                document.getElementById('newModel').value = '';
+                document.getElementById('newNotes').value = '';
+                document.getElementById('coverInput').value = '';
+                resetUploader('coverUploader', 'coverPreview', 'cover');
+            } catch(e) { 
+                console.error(e); 
+                showNotif('Error al guardar', true); 
+            } finally {
+                btn.disabled = false;
+            }
+        };
+
+        // 2. Cargar Bicis y llenar Select
+        const bikeSelector = document.getElementById('bikeSelector');
+
+        onSnapshot(query(bikesCol, orderBy('createdAt', 'desc')), (snap) => {
+            const publicGrid = document.getElementById('publicBikesGrid');
+            publicGrid.innerHTML = '';
+            
+            // Re-poblar selector manteniendo selección si es posible, o resetear
+            const currentVal = bikeSelector.value;
+            bikeSelector.innerHTML = '<option value="">-- Seleccionar Bici para Editar --</option>';
+            
+            localBikes = [];
+
+            if(snap.empty) publicGrid.innerHTML = '<p style="text-align:center;width:100%;">No hay trabajos activos.</p>';
+
+            snap.forEach(docSnap => {
+                const b = { id: docSnap.id, ...docSnap.data() };
+                localBikes.push(b);
+                
+                // Llenar Selector Admin
+                const opt = document.createElement('option');
+                opt.value = b.id;
+                opt.textContent = `${b.model} - ${b.client} (${b.status.toUpperCase()})`;
+                bikeSelector.appendChild(opt);
+
+                // Renderizar Card Pública
+                renderPublicCard(b, publicGrid);
+            });
+            
+            // Restaurar seleccion si aun existe
+            if(currentVal && localBikes.find(b => b.id === currentVal)) {
+                bikeSelector.value = currentVal;
             }
         });
 
-        document.getElementById('btnSaveSettings').onclick = async () => {
-            await setDoc(settingsRef, {
-                heroTitle: document.getElementById('confHeroTitle').value,
-                heroSubtitle: document.getElementById('confHeroSubtitle').value,
-                whatsapp: document.getElementById('confWhatsapp').value,
-                showTallerLive: document.getElementById('confShowTaller').checked
-            }, { merge: true });
-            showNotif("Configuración Guardada");
+        // 3. Render Card Pública
+        function renderPublicCard(b, container) {
+            const statusColors = { diagnostico:'#f39c12', reparacion:'#3498db', listo:'#2ecc71', entregado:'#95a5a6' };
+            const labels = { diagnostico:'Diagnóstico', reparacion:'En Reparación', listo:'Lista para Retiro', entregado:'Entregada' };
+            
+            const card = document.createElement('div');
+            card.className = 'bike-card animate-on-scroll';
+            card.innerHTML = `
+                <img src="${b.photo}" class="bike-cover" loading="lazy">
+                <div class="bike-info">
+                    <h3>${b.model}</h3>
+                    <p style="color:#7f8c8d; font-size:0.9rem;">${b.client}</p>
+                    <span class="status-badge" style="background:${statusColors[b.status]}; margin-top:10px; display:inline-block;">${labels[b.status]}</span>
+                </div>
+            `;
+            card.onclick = () => openBikeModal(b);
+            container.appendChild(card);
+        }
+
+        // --- SELECTOR DE EDICIÓN (LÓGICA CRÍTICA DE SELECCIÓN) ---
+        bikeSelector.onchange = async (e) => {
+            const id = e.target.value;
+            const area = document.getElementById('editArea');
+            
+            if(!id) { 
+                area.classList.add('hidden'); 
+                currentEditingId = null;
+                return; 
+            }
+            
+            // SETEAR ID GLOBAL
+            currentEditingId = id;
+            
+            const b = localBikes.find(x => x.id === id);
+            document.getElementById('editingLabel').textContent = `${b.model} - ${b.client}`;
+            document.getElementById('editStatus').value = b.status;
+            area.classList.remove('hidden');
+
+            // Asegurar que el documento tenga el array 'stages'
+            // Esto previene errores al hacer arrayUnion en documentos viejos
+            if(!b.stages) {
+                try {
+                    await setDoc(doc(db, 'bicicletas', id), { stages: [] }, { merge: true });
+                    console.log("Array stages inicializado para:", id);
+                } catch(err) {
+                    console.error("Error init stages:", err);
+                }
+            }
+            console.log("Bici seleccionada:", currentEditingId);
         };
 
-        // Modal Público
+        // Actualizar Estado
+        document.getElementById('btnUpdateStatus').onclick = async () => {
+            if(!currentEditingId) return;
+            await updateDoc(doc(db, 'bicicletas', currentEditingId), { status: document.getElementById('editStatus').value });
+            showNotif('Estado actualizado');
+        };
+
+        // Borrar Bici
+        document.getElementById('btnDeleteBike').onclick = async () => {
+            if(confirm('¿Eliminar bici y todo su historial?')) {
+                await deleteDoc(doc(db, 'bicicletas', currentEditingId));
+                document.getElementById('editArea').classList.add('hidden');
+                bikeSelector.value = '';
+                currentEditingId = null;
+                showNotif('Bici eliminada');
+            }
+        };
+
+        // Búsqueda Cliente
+        document.getElementById('btnSearch').onclick = () => {
+            const code = document.getElementById('searchCode').value.trim();
+            const found = localBikes.find(b => b.trackingCode === code);
+            if(found) openBikeModal(found);
+            else showNotif('Código no encontrado', true);
+        };
+
+        // --- MODAL DE DETALLE (CLIENTE) ---
         function openBikeModal(b) {
             const modal = document.getElementById('bikeModal');
             const content = document.getElementById('modalContent');
@@ -793,9 +998,17 @@
             let stagesHtml = '';
             if(b.stages && b.stages.length) {
                 b.stages.forEach(s => {
+                    // Manejo seguro de fechas (compatibilidad Timestamp vs Date)
                     let dateStr = '';
-                    if (s.createdAt && s.createdAt.toDate) dateStr = s.createdAt.toDate().toLocaleDateString();
-                    else if (s.createdAt) dateStr = new Date(s.createdAt).toLocaleDateString();
+                    if (s.createdAt && s.createdAt.toDate) {
+                        dateStr = s.createdAt.toDate().toLocaleDateString();
+                    } else if (s.createdAt && typeof s.createdAt === 'string') {
+                        dateStr = new Date(s.createdAt).toLocaleDateString();
+                    } else if (s.createdAt instanceof Date) {
+                        dateStr = s.createdAt.toLocaleDateString();
+                    } else {
+                        dateStr = 'Reciente';
+                    }
 
                     if(s.type === 'comparison') {
                         stagesHtml += `
@@ -835,13 +1048,6 @@
                 e.target.classList.remove('active');
                 setTimeout(()=>e.target.style.display='none',300);
             }
-        };
-
-        document.getElementById('btnSearch').onclick = () => {
-            const code = document.getElementById('searchCode').value.trim();
-            const found = localBikes.find(b => b.trackingCode === code);
-            if(found) openBikeModal(found);
-            else showNotif('Código no encontrado', true);
         };
 
     </script>
