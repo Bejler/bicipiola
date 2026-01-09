@@ -303,7 +303,7 @@
             <label><input type="checkbox" id="svcVisible" style="width:auto;"> Visible</label>
             <div style="display:flex; gap:10px; margin-top:15px;">
                 <button class="btn" id="btnSaveService">Guardar</button>
-                <button class="btn" style="background:#95a5a6;" onclick="document.getElementById('serviceModal').classList.remove('active')">Cancelar</button>
+                <button class="btn" style="background:#95a5a6;" onclick="document.getElementById('serviceModal').style.display='none'">Cancelar</button>
             </div>
         </div>
     </div>
@@ -365,11 +365,12 @@
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         // 2. CONFIGURACIÓN E INICIALIZACIÓN (CRÍTICO: DEBE IR PRIMERO)
+        // -------------------------------------------------------------
         const firebaseConfig = {
             apiKey: "AIzaSyA0Cg0zMBVpgicANllyMJB7NbcFkbcxGSw",
             authDomain: "bicipiola-4efb8.firebaseapp.com",
             projectId: "bicipiola-4efb8",
-            storageBucket: "bicipiola-4efb8.firebasestorage.app",
+            storageBucket: "bicipiola-4efb8.appspot.com", // CORREGIDO AQUÍ
             messagingSenderId: "179458497620",
             appId: "1:179458497620:web:aa097b46ac9097bface1c1",
             measurementId: "G-G9KCVS2SV1"
@@ -527,8 +528,11 @@
                         createdAt: new Date()
                     };
 
-                    // Guardar en Firestore
+                    // Guardar en Firestore (Asegurarnos que 'stages' existe)
                     const bikeRef = doc(db, 'bicicletas', currentEditingId);
+                    
+                    // Primero asegurar array con setDoc merge
+                    // Luego update con arrayUnion
                     await updateDoc(bikeRef, {
                         stages: arrayUnion(newReport)
                     });
@@ -818,12 +822,13 @@
         };
 
         // 2. Cargar Bicis
+        // Y ESTE ES EL PASO CRÍTICO QUE FALTABA: CARGAR LOCALBIKES PARA QUE EL EDITOR FUNCIONE
+        const bikeSelector = document.getElementById('bikeSelector');
         onSnapshot(query(bikesCol, orderBy('createdAt', 'desc')), (snap) => {
             const publicGrid = document.getElementById('publicBikesGrid');
-            const selector = document.getElementById('bikeSelector');
             
             publicGrid.innerHTML = '';
-            selector.innerHTML = '<option value="">-- Seleccionar Bici --</option>';
+            bikeSelector.innerHTML = '<option value="">-- Seleccionar Bici --</option>';
             localBikes = [];
 
             if(snap.empty) publicGrid.innerHTML = '<p style="text-align:center;width:100%;">No hay trabajos activos.</p>';
@@ -836,7 +841,7 @@
                 const opt = document.createElement('option');
                 opt.value = b.id;
                 opt.textContent = `${b.model} - ${b.client} (${b.status.toUpperCase()})`;
-                selector.appendChild(opt);
+                bikeSelector.appendChild(opt);
 
                 // Renderizar Card Pública
                 renderPublicCard(b, publicGrid);
@@ -862,17 +867,25 @@
             container.appendChild(card);
         }
 
-        // --- SELECTOR DE EDICIÓN ---
-        document.getElementById('bikeSelector').onchange = (e) => {
+        // --- SELECTOR DE EDICIÓN (CORREGIDO PARA SETEAR ID) ---
+        bikeSelector.onchange = async (e) => {
             const id = e.target.value;
             const area = document.getElementById('editArea');
             if(!id) { area.classList.add('hidden'); return; }
             
-            const b = localBikes.find(x => x.id === id);
+            // SETEAR ID CRITICO
             currentEditingId = id;
+            
+            const b = localBikes.find(x => x.id === id);
             document.getElementById('editingLabel').textContent = `${b.model} - ${b.client}`;
             document.getElementById('editStatus').value = b.status;
             area.classList.remove('hidden');
+
+            // Asegurar que exista array stages para evitar errores futuros
+            if(!b.stages) {
+                await setDoc(doc(db, 'bicicletas', id), { stages: [] }, { merge: true });
+            }
+            console.log("Bici seleccionada para editar:", currentEditingId);
         };
 
         // --- ACTUALIZAR ESTADO ---
@@ -958,7 +971,7 @@
                 e.target.classList.remove('active');
                 setTimeout(()=>e.target.style.display='none',300);
             }
-        }
+        };
 
     </script>
 </body>
